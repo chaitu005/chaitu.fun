@@ -23,5 +23,14 @@
 </head>
 <body>
   <iframe src="https://script.google.com/macros/s/AKfycbzelJCOF9n7_9aKECEUmT90xwgsKfy1jLuZJxSvYDFrPZH1SSa_-LNLc96mPbXCdl1Baw/exec" allowfullscreen></iframe>
+  <script>
+    const DEPLOYMENT_ID = "AKfycbzelJCOF9n7_9aKECEUmT90xwgsKfy1jLuZJxSvYDFrPZH1SSa_-LNLc96mPbXCdl1Baw";
+    function redirectToTrackerPage() {
+        const iframe = document.getElementById("app-frame");
+        if (iframe) {
+                iframe.src = "https://script.google.com/macros/s/"+DEPLOYMENT_ID+"/exec?action=getHomePage";
+            }
+     }
+  </script>
 </body>
 </html>
