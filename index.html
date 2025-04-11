@@ -55,7 +55,7 @@
     // Allow logout from inside the iframe
     function logout() {
       localStorage.removeItem("loggedInUser");
-      iframe.src = SCRIPT_URL+"?action=getLoginPage";
+      iframe.src = SCRIPT_URL;  // No `?action=...`
     }
 
     // Prevent back button showing login page after login
