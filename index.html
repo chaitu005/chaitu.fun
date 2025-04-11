@@ -1,14 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
   <title>Family Expenses Tracker</title>
   <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
   <link rel="manifest" href="/favicon/site.webmanifest">
   <style>
-    html, body {
+    body, html {
       margin: 0;
       padding: 0;
       height: 100%;
@@ -16,21 +15,23 @@
     }
     iframe {
       width: 100%;
-      height: 100%;
+      height: 100vh;
       border: none;
     }
   </style>
 </head>
 <body>
-  <iframe src="https://script.google.com/macros/s/AKfycbzelJCOF9n7_9aKECEUmT90xwgsKfy1jLuZJxSvYDFrPZH1SSa_-LNLc96mPbXCdl1Baw/exec" allowfullscreen></iframe>
+  <iframe
+    id="app-frame"
+    src="https://script.google.com/macros/s/AKfycbzelJCOF9n7_9aKECEUmT90xwgsKfy1jLuZJxSvYDFrPZH1SSa_-LNLc96mPbXCdl1Baw/exec"
+  ></iframe>
   <script>
-    const DEPLOYMENT_ID = "AKfycbzelJCOF9n7_9aKECEUmT90xwgsKfy1jLuZJxSvYDFrPZH1SSa_-LNLc96mPbXCdl1Baw";
     function redirectToTrackerPage() {
         const iframe = document.getElementById("app-frame");
         if (iframe) {
-                iframe.src = "https://script.google.com/macros/s/"+DEPLOYMENT_ID+"/exec?action=getHomePage";
-            }
-     }
+          iframe.src = "https://script.google.com/macros/s/AKfycbzelJCOF9n7_9aKECEUmT90xwgsKfy1jLuZJxSvYDFrPZH1SSa_-LNLc96mPbXCdl1Baw/exec?page=tracker";
+        }
+      }
   </script>
 </body>
 </html>
