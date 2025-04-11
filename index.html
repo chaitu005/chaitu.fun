@@ -40,22 +40,25 @@
   <script>
     const iframe = document.getElementById("app-frame");
     const loader = document.getElementById("loader");
-
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzelJCOF9n7_9aKECEUmT90xwgsKfy1jLuZJxSvYDFrPZH1SSa_-LNLc96mPbXCdl1Baw/exec";
+    // Show loader until iframe is loaded
     iframe.onload = function () {
       loader.style.display = "none";
       iframe.style.display = "block";
     };
 
+    // Redirect to Home (called from login page inside iframe)
     function redirectToTrackerPage() {
-      iframe.src = "https://script.google.com/macros/s/AKfycbzelJCOF9n7_9aKECEUmT90xwgsKfy1jLuZJxSvYDFrPZH1SSa_-LNLc96mPbXCdl1Baw/exec?action=getHomePage";
+      iframe.src = SCRIPT_URL+"?action=getHomePage";
     }
 
+    // Allow logout from inside the iframe
     function logout() {
       localStorage.removeItem("loggedInUser");
-      iframe.src = "https://script.google.com/macros/s/AKfycbzelJCOF9n7_9aKECEUmT90xwgsKfy1jLuZJxSvYDFrPZH1SSa_-LNLc96mPbXCdl1Baw/exec";
+      iframe.src = SCRIPT_URL+"?action=getLoginPage";
     }
 
-    // Prevent browser back button from navigating back
+    // Prevent back button showing login page after login
     window.history.pushState(null, "", window.location.href);
     window.onpopstate = function () {
       window.history.pushState(null, "", window.location.href);
