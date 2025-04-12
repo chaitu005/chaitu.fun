@@ -1,19 +1,21 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8" />
   <title>Family Expenses Tracker</title>
-  <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
-  <link rel="manifest" href="/favicon/site.webmanifest">
+  <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png" />
+  <link rel="manifest" href="/favicon/site.webmanifest" />
   <style>
     body, html {
       margin: 0;
       padding: 0;
       height: 100%;
-      overflow: hidden;
       font-family: sans-serif;
+      overflow: hidden;
     }
+
     #loader {
       position: absolute;
       top: 50%;
@@ -21,7 +23,9 @@
       transform: translate(-50%, -50%);
       font-size: 1.2rem;
       color: #333;
+      z-index: 10;
     }
+
     iframe {
       width: 100%;
       height: 100vh;
@@ -30,13 +34,16 @@
       opacity: 0;
       transition: opacity 0.3s ease-in-out;
     }
+
     iframe.loaded {
       opacity: 1;
+      display: block;
     }
   </style>
 </head>
 <body>
   <div id="loader">⏳ Loading...</div>
+
   <iframe
     id="app-frame"
     src="https://script.google.com/macros/s/AKfycbzelJCOF9n7_9aKECEUmT90xwgsKfy1jLuZJxSvYDFrPZH1SSa_-LNLc96mPbXCdl1Baw/exec"
@@ -45,37 +52,37 @@
   <script>
     const iframe = document.getElementById("app-frame");
     const loader = document.getElementById("loader");
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzelJCOF9n7_9aKECEUmT90xwgsKfy1jLuZJxSvYDFrPZH1SSa_-LNLc96mPbXCdl1Baw/exec";
-    // Show loader until iframe is loaded
+
+    // Initial load: show loader until iframe is ready
     iframe.onload = function () {
       setTimeout(() => {
         loader.style.display = "none";
-        iframe.style.display = "block";
         iframe.classList.add("loaded");
-        }, 200);
+      }, 200); // smoother fade
     };
 
-    // Redirect to Home (called from login page inside iframe)
+    // Expose to iframe: redirect to tracker after login
     function redirectToTrackerPage() {
-      iframe.src = SCRIPT_URL+"?action=getHomePage";
+      loader.style.display = "block";
+      iframe.classList.remove("loaded");
+      iframe.src = "https://script.google.com/macros/s/AKfycbzelJCOF9n7_9aKECEUmT90xwgsKfy1jLuZJxSvYDFrPZH1SSa_-LNLc96mPbXCdl1Baw/exec?action=getHomePage";
     }
 
-    // Allow logout from inside the iframe
+    // Expose logout
     function logout() {
       localStorage.removeItem("loggedInUser");
       loader.style.display = "block";
       iframe.classList.remove("loaded");
-      iframe.style.display = "none";
-      iframe.src = SCRIPT_URL;  // No `?action=...`
+      iframe.src = "https://script.google.com/macros/s/AKfycbzelJCOF9n7_9aKECEUmT90xwgsKfy1jLuZJxSvYDFrPZH1SSa_-LNLc96mPbXCdl1Baw/exec";
     }
 
-    // Prevent back button showing login page after login
+    // Prevent back nav issues
     window.history.pushState(null, "", window.location.href);
     window.onpopstate = function () {
       window.history.pushState(null, "", window.location.href);
     };
 
-    // Expose functions to iframe
+    // Make functions available inside iframe
     window.redirectToTrackerPage = redirectToTrackerPage;
     window.logout = logout;
   </script>
