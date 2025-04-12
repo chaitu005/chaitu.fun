@@ -27,6 +27,11 @@
       height: 100vh;
       border: none;
       display: none;
+      opacity: 0;
+      transition: opacity 0.3s ease-in-out;
+    }
+    iframe.loaded {
+      opacity: 1;
     }
   </style>
 </head>
@@ -43,8 +48,11 @@
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzelJCOF9n7_9aKECEUmT90xwgsKfy1jLuZJxSvYDFrPZH1SSa_-LNLc96mPbXCdl1Baw/exec";
     // Show loader until iframe is loaded
     iframe.onload = function () {
-      loader.style.display = "none";
-      iframe.style.display = "block";
+      setTimeout(() => {
+        loader.style.display = "none";
+        iframe.style.display = "block";
+        iframe.classList.add("loaded");
+        }, 200);
     };
 
     // Redirect to Home (called from login page inside iframe)
@@ -55,6 +63,9 @@
     // Allow logout from inside the iframe
     function logout() {
       localStorage.removeItem("loggedInUser");
+      loader.style.display = "block";
+      iframe.classList.remove("loaded");
+      iframe.style.display = "none";
       iframe.src = SCRIPT_URL;  // No `?action=...`
     }
 
