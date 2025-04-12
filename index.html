@@ -8,7 +8,7 @@
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png" />
   <link rel="manifest" href="/favicon/site.webmanifest" />
   <style>
-    body, html { 
+    body, html {
       margin: 0;
       padding: 0;
       height: 100%;
@@ -52,6 +52,8 @@
   <script>
     const iframe = document.getElementById("app-frame");
     const loader = document.getElementById("loader");
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzelJCOF9n7_9aKECEUmT90xwgsKfy1jLuZJxSvYDFrPZH1SSa_-LNLc96mPbXCdl1Baw/exec";
+
 
     // Initial load: show loader until iframe is ready
     iframe.onload = function () {
@@ -65,7 +67,7 @@
     function redirectToTrackerPage() {
       loader.style.display = "block";
       iframe.classList.remove("loaded");
-      iframe.src = "https://script.google.com/macros/s/AKfycbzelJCOF9n7_9aKECEUmT90xwgsKfy1jLuZJxSvYDFrPZH1SSa_-LNLc96mPbXCdl1Baw/exec?action=getHomePage";
+      iframe.src = SCRIPT_URL+"?action=getHomePage";
     }
 
     // Expose logout
@@ -73,7 +75,7 @@
       localStorage.removeItem("loggedInUser");
       loader.style.display = "block";
       iframe.classList.remove("loaded");
-      iframe.src = "https://script.google.com/macros/s/AKfycbzelJCOF9n7_9aKECEUmT90xwgsKfy1jLuZJxSvYDFrPZH1SSa_-LNLc96mPbXCdl1Baw/exec";
+      iframe.src = SCRIPT_URL+"?action=getLoginPage";;
     }
 
     // Prevent back nav issues
