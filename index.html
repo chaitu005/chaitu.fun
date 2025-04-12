@@ -80,30 +80,40 @@
     // }
 
     function logout() {
-  const iframe = document.getElementById("app-frame");
+      const iframe = document.getElementById("app-frame");
 
-  if (iframe) {
-    console.log("🔄 Logging out: Resetting iframe to login page...");
-    iframe.style.display = "none";
-    iframe.src =  SCRIPT_URL+"?action=getHomePage";
+      if (iframe) {
+        console.log("🧼 Resetting iframe to login page...");
+        iframe.style.display = "none";
+        iframe.src = SCRIPT_URL+"?action=getLoginPage";
 
-    const loader = document.getElementById("loader");
-    if (loader) loader.style.display = "block";
+        // Optional loading state
+        const loader = document.getElementById("loader");
+        if (loader) loader.style.display = "block";
 
-    iframe.onload = function () {
-      console.log("✅ Login page loaded");
-      iframe.style.display = "block";
-      if (loader) loader.style.display = "none";
-    };
-  }
-}
+        // Wait for iframe to load again
+        iframe.onload = function () {
+          console.log("✅ Login page loaded in iframe.");
+          iframe.style.display = "block";
+          if (loader) loader.style.display = "none";
+        };
+      } else {
+        console.log("❌ iframe not found in parent.");
+      }
+    }
 
+    window.addEventListener("message", function (event) {
+      // Only allow messages from your Apps Script web app origin
+      const trustedOrigin = "https://script.google.com";
 
-    window.addEventListener("message", (event) => {
-      console.log(JSON.stringify(event))
-      if (event.data && event.data.type === "logout") {
-        console.log("🔁 Received logout message from iframe");
-        logout();
+      if (event.origin.startsWith(trustedOrigin)) {
+        if (event.data === "logout") {
+          console.log("🔐 Received logout message from iframe");
+          localStorage.removeItem("loggedInUser");
+          iframe.src = SCRIPT_URL;
+        }
+      } else {
+        console.warn("⚠️ Ignoring message from untrusted origin:", event.origin);
       }
     });
 
