@@ -79,6 +79,7 @@
     }
 
     window.addEventListener("message", (event) => {
+      console.log(JSON.stringify(event))
       if (event.data && event.data.action === "logout") {
         console.log("🔁 Parent received logout request");
         logout(); // your parent logout() function
