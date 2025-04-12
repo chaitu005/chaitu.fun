@@ -79,28 +79,35 @@
     //   iframe.src = SCRIPT_URL+"?action=getLoginPage";;
     // }
 
-    function logout() {
+    function logout1() {
       const iframe = document.getElementById("app-frame");
 
-      if (iframe) {
-        console.log("🧼 Resetting iframe to login page...");
-        iframe.style.display = "none";
-        iframe.src = SCRIPT_URL+"?action=getLoginPage";
+      // if (iframe) {
+      //   console.log("🧼 Resetting iframe to login page...");
+      //   iframe.style.display = "none";
+      //   iframe.src = SCRIPT_URL+"?action=getLoginPage";
 
-        // Optional loading state
-        const loader = document.getElementById("loader");
-        if (loader) loader.style.display = "block";
+      //   // Optional loading state
+      //   const loader = document.getElementById("loader");
+      //   if (loader) loader.style.display = "block";
 
-        // Wait for iframe to load again
-        iframe.onload = function () {
-          console.log("✅ Login page loaded in iframe.");
-          iframe.style.display = "block";
-          if (loader) loader.style.display = "none";
-        };
-      } else {
-        console.log("❌ iframe not found in parent.");
-      }
+      //   // Wait for iframe to load again
+      //   iframe.onload = function () {
+      //     console.log("✅ Login page loaded in iframe.");
+      //     iframe.style.display = "block";
+      //     if (loader) loader.style.display = "none";
+      //   };
+      // } else {
+      //   console.log("❌ iframe not found in parent.");
+      // }
     }
+    function logout() {
+      console.log("🔐 GitHub logout triggered");
+      localStorage.removeItem("loggedInUser");
+      const iframe = document.getElementById("app-frame");
+      iframe.src = "https://script.google.com/macros/s/AKfycbzelJCOF9n7_9aKECEUmT90xwgsKfy1jLuZJxSvYDFrPZH1SSa_-LNLc96mPbXCdl1Baw/exec";
+    }
+
 
     window.addEventListener("message", function (event) {
       // Only allow messages from your Apps Script web app origin
