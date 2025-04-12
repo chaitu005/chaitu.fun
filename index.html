@@ -46,7 +46,7 @@
 
   <iframe
     id="app-frame"
-    src="https://script.google.com/macros/s/AKfycbzelJCOF9n7_9aKECEUmT90xwgsKfy1jLuZJxSvYDFrPZH1SSa_-LNLc96mPbXCdl1Baw/exec?action=getLoginPage"
+    src="https://script.google.com/macros/s/AKfycbzelJCOF9n7_9aKECEUmT90xwgsKfy1jLuZJxSvYDFrPZH1SSa_-LNLc96mPbXCdl1Baw/exec"
   ></iframe>
 
   <script>
@@ -77,6 +77,13 @@
       iframe.classList.remove("loaded");
       iframe.src = SCRIPT_URL+"?action=getLoginPage";;
     }
+
+    window.addEventListener("message", (event) => {
+      if (event.data && event.data.action === "logout") {
+        console.log("🔁 Parent received logout request");
+        logout(); // your parent logout() function
+      }
+    });
 
     // Prevent back nav issues
     window.history.pushState(null, "", window.location.href);
