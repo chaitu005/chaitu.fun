@@ -72,11 +72,13 @@
 
     // Expose logout
     function logout() {
+      console.log("⏳ Parent logout called...");
       localStorage.removeItem("loggedInUser");
       loader.style.display = "block";
       iframe.classList.remove("loaded");
       iframe.src = SCRIPT_URL+"?action=getLoginPage";;
     }
+    
 
     window.addEventListener("message", (event) => {
       console.log(JSON.stringify(event))
