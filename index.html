@@ -101,25 +101,14 @@
       //   console.log("❌ iframe not found in parent.");
       // }
     }
-    function logout2() {
-      console.log("🔐 GitHub logout triggered");
+    function logout() {
+      console.log("🔄 Logging out...");
       localStorage.removeItem("loggedInUser");
-      const iframe = document.getElementById("app-frame");
-      iframe.src = "https://script.google.com/macros/s/AKfycbzelJCOF9n7_9aKECEUmT90xwgsKfy1jLuZJxSvYDFrPZH1SSa_-LNLc96mPbXCdl1Baw/exec";
+
+      // Reload Web App from scratch (this loads login by default)
+      window.location.href = "https://script.google.com/macros/s/AKfycbzelJCOF9n7_9aKECEUmT90xwgsKfy1jLuZJxSvYDFrPZH1SSa_-LNLc96mPbXCdl1Baw/exec";
     }
 
-    function logout() {
-      console.log("🔐 Parent logout triggered");
-      localStorage.removeItem("loggedInUser");
-      const iframe = document.getElementById("app-frame");
-  
-      // Show loader while iframe reloads
-      document.getElementById("loader").style.display = "block";
-      iframe.style.display = "none";
-  
-      // Reset iframe to the login page
-      iframe.src = "https://script.google.com/macros/s/AKfycbzelJCOF9n7_9aKECEUmT90xwgsKfy1jLuZJxSvYDFrPZH1SSa_-LNLc96mPbXCdl1Baw/exec";
-    }
 
 
     window.addEventListener("message", function (event) {
