@@ -101,13 +101,37 @@
       //   console.log("❌ iframe not found in parent.");
       // }
     }
-    function logout() {
-      console.log("🔄 Logging out...");
-      localStorage.removeItem("loggedInUser");
 
-      // Reload Web App from scratch (this loads login by default)
-      window.location.href = "https://script.google.com/macros/s/AKfycbzelJCOF9n7_9aKECEUmT90xwgsKfy1jLuZJxSvYDFrPZH1SSa_-LNLc96mPbXCdl1Baw/exec";
-    }
+
+  function logout() {
+    const iframe = document.getElementById("app-frame");
+    const loader = document.getElementById("loader");
+
+    console.log("🔄 Logging out...");
+    localStorage.removeItem("loggedInUser");
+
+    loader.style.display = "block";
+    iframe.style.display = "none";
+
+    // Load login HTML from Google Apps Script
+    fetch(SCRIPT_URL + "?action=getLoginPage")
+      .then(res => res.text())
+      .then(html => {
+        console.log("✅ Login HTML received");
+        const blob = new Blob([html], { type: "text/html" });
+        const loginBlobURL = URL.createObjectURL(blob);
+        iframe.src = loginBlobURL;
+
+        iframe.onload = () => {
+          loader.style.display = "none";
+          iframe.style.display = "block";
+        };
+      })
+      .catch(err => {
+        console.error("❌ Error loading login page:", err);
+        loader.innerText = "Error loading login page.";
+      });
+  }
 
 
 
