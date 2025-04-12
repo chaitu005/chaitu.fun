@@ -1,90 +1,344 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Family Expenses Tracker</title>
-  <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png" />
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png" />
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png" />
-  <link rel="manifest" href="/favicon/site.webmanifest" />
-  <style>
-    body, html {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      font-family: sans-serif;
-      overflow: hidden;
+// === CONFIGURATION ===
+const SHEET_NAME_EXPENSES = "Expenses";
+const SHEET_NAME_USERS = "Users";
+const SHEET_NAME_POLICIES = "Policies";
+const SHEET_NAME_FILES = "FILES";
+const FOLDER_PATH_FILES = "https://drive.google.com/drive/folders/1Cri0EoFR-BdarDVdUAwvyr6q9yRUqIKv";
+const FOLDER_ID_FILES = "1Cri0EoFR-BdarDVdUAwvyr6q9yRUqIKv";
+const SHEET_NAME_UPCOMING = "Upcoming Expenses";
+const SHEET_NAME_LIMITS = "Limits";
+const EMAIL_RECIPIENT = "chaitanya.moganti@yahoo.com"; // Change this
+const TWILIO_ACCOUNT_SID = "ACe9c895f8e4bce596ae43783ccc09a947";
+const TWILIO_AUTH_TOKEN = "9c76d07eeaff5de08b7583e197e3ef39";
+const TWILIO_API_URL = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`;
+const TWILIO_WHATSAPP_FROM = "whatsapp:+14155238886";
+const WHATSAPP_TO = "whatsapp:+919704950085";
+
+// --- CORS SETUP ---
+function loadLoginPage() {
+  return HtmlService.createHtmlOutputFromFile('login').getContent();
+}
+
+function loadHomePage() {
+  return HtmlService.createHtmlOutputFromFile('index').getContent();
+}
+
+function doPost(e) {
+  try {
+    const request = JSON.parse(e.postData.contents);
+    const action = request.action;
+
+    switch (action) {
+      case "addExpense":
+        return jsonResponse(addExpense(request.data));
+      case "validateUser":
+          return jsonResponse(validateUser(request.data));
+      case "savePolicy":
+           return jsonResponse(savePolicy(request.data));
+      case "saveFile":
+           return jsonResponse(saveFile(request.data));
+      default:
+           return jsonResponse({ error: "Invalid action" });
     }
+  } catch (err) {
+    return jsonResponse({ error: err.message });
+  }
+}
 
-    #loader {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 1.2rem;
-      color: #333;
-      z-index: 10;
+function doGet(e) {
+  const action = e.parameter.action;
+
+  if (action) {
+    switch (action) {
+      case "getLoginPage":  
+        const loginHtmlRaw = HtmlService.createHtmlOutputFromFile("login").getContent();
+        Logger.log(loginHtmlRaw);  
+        return ContentService.createTextOutput(loginHtmlRaw).setMimeType(ContentService.MimeType.HTML);
+
+      case "getHomePage":
+        var html =  HtmlService.createHtmlOutputFromFile('index')
+          .setTitle("Family Expense Tracker")
+          .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+        Logger.log(html.getContent());
+        return html;
+      case "getExpenses":
+        return jsonResponse(getExpenses());
+      case "getTotals":
+        return jsonResponse(getTotals());
+      case "checkLimits":
+        return jsonResponse(checkLimits());
+      case "getUpcoming":
+        return jsonResponse(getUpcomingExpenses());
+      default:
+        return ContentService.createTextOutput("❌ Unknown action.");
     }
+  }
 
-    iframe {
-      width: 100%;
-      height: 100vh;
-      border: none;
-      display: none;
-      opacity: 0;
-      transition: opacity 0.3s ease-in-out;
+  // if (e.parameter.image === "bg") {
+  //   const fileId = "1IfgCTHyctJBmJ0NdqrskX0bGt2vKZ2OX"; 
+  //   const file = DriveApp.getFileById(fileId);
+  //   const blob = file.getBlob();
+
+  //   return ContentService.createOutput(blob.getBytes())
+  //                        .setMimeType(blob.getContentType());
+  // }
+
+  return HtmlService.createTemplateFromFile('login')
+    .evaluate()
+    .setTitle("Login")
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+function testFileAccess() {
+  var file = DriveApp.getFileById("1IfgCTHyctJBmJ0NdqrskX0bGt2vKZ2OX");
+  Logger.log(file.getName());
+}
+
+function jsonResponse(data) {
+  return ContentService.createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+
+// --- FUNCTIONS ---
+function addExpense(data) {
+  const sheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_EXPENSES);
+  sheet.appendRow([data.date, data.category, data.amount, data.type, data.notes,data.person,data.updatedBy]);
+  return { success: true };
+}
+
+function getExpenses() {
+  const sheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_EXPENSES);
+  const data = sheet.getDataRange().getValues();
+  const headers = data[0];
+  const expenses = [];
+
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    const expense = {};
+    for (let j = 0; j < headers.length; j++) {
+      expense[headers[j]] = headers[j]=="Date"? FormatDate(row[j]):row[j];
     }
+    expenses.push(expense);
+  }
+  return { expenses };
+}
 
-    iframe.loaded {
-      opacity: 1;
-      display: block;
+function validateUser(data) {
+  const userName = data.userName;
+  const pwd = data.password;
+  const sheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_USERS);
+  const excelData = sheet.getDataRange().getValues();
+  var isUserValid = false;
+  for (let i = 1; i < excelData.length; i++) {
+    const row = excelData[i];
+    if(userName == row[0] && pwd == row[1]){
+      isUserValid = true;
+      break;
     }
-  </style>
-</head>
-<body>
-  <div id="loader">⏳ Loading...</div>
+  }
+  return { isValid: isUserValid };
+}
 
-  <iframe
-    id="app-frame"
-    src="https://script.google.com/macros/s/AKfycbzelJCOF9n7_9aKECEUmT90xwgsKfy1jLuZJxSvYDFrPZH1SSa_-LNLc96mPbXCdl1Baw/exec"
-  ></iframe>
 
-  <script>
-    const iframe = document.getElementById("app-frame");
-    const loader = document.getElementById("loader");
+function FormatDate(dateVal) {  
+    return Utilities.formatDate(dateVal, Session.getScriptTimeZone(), "yyyy-MM-dd");
+  }
+  
 
-    // Initial load: show loader until iframe is ready
-    iframe.onload = function () {
-      setTimeout(() => {
-        loader.style.display = "none";
-        iframe.classList.add("loaded");
-      }, 200); // smoother fade
-    };
+function getTotals() {
+  const sheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_EXPENSES);
+  const data = sheet.getDataRange().getValues().slice(1);
 
-    // Expose to iframe: redirect to tracker after login
-    function redirectToTrackerPage() {
-      loader.style.display = "block";
-      iframe.classList.remove("loaded");
-      iframe.src = "https://script.google.com/macros/s/AKfycbzelJCOF9n7_9aKECEUmT90xwgsKfy1jLuZJxSvYDFrPZH1SSa_-LNLc96mPbXCdl1Baw/exec?action=getHomePage";
+  const monthlyTotals = {};
+  const fyTotals = {};
+  const categoryTotals = {};
+  const personTotalsCurrentMonth={};
+  const personTotalsCurrentYear={};
+  const personTotalsToday={};
+  const today = FormatDate(new Date());
+  const todayParts = today.split("-");
+  const currentYear = parseInt(todayParts[0], 10);
+  const currentMonth = parseInt(todayParts[1], 10) - 1;
+  const todayDateVal = parseInt(todayParts[2], 10)
+
+  const currentMonthKey = `${currentYear}-${currentMonth.toString().padStart(2, '0')}`;
+  const currentFyStart = (currentMonth >= 4) ? currentYear : currentYear - 1;
+  const currentFyKey = `FY${currentFyStart}-${(currentFyStart + 1).toString().slice(-2)}`
+  const todayKey = `${currentYear}-${currentMonth}-${todayDateVal}`
+
+  data.forEach(([dateStr, category, amount, , type, person]) => {
+    if (type === "Fixed") return;
+    const date = FormatDate(dateStr);
+    amount = Number(amount);
+    const todayParts = date.split("-");
+    const year = parseInt(todayParts[0], 10);
+    const month = parseInt(todayParts[1], 10) - 1;
+    const dateVal = parseInt(todayParts[2], 10)
+    
+    const dateKey = `${year}-${month}-${dateVal}`
+
+    const monthKey = `${year}-${month.toString().padStart(2, '0')}`;
+    monthlyTotals[monthKey] = (monthlyTotals[monthKey] || 0) + amount;
+
+    const fyStart = (month >= 4) ? year : year - 1;
+    const fyKey = `FY${fyStart}-${(fyStart + 1).toString().slice(-2)}`;
+    fyTotals[fyKey] = (fyTotals[fyKey] || 0) + amount;
+
+    categoryTotals[category] = (categoryTotals[category] || 0) + amount;
+    personTotalsCurrentMonth[person]= monthKey==currentMonthKey ? (personTotalsCurrentMonth[person]||0) + amount : (personTotalsToday[person]||0);
+    personTotalsCurrentYear[person]= currentFyKey==fyKey ? (personTotalsCurrentYear[person]||0) + amount : (personTotalsToday[person]||0);
+    personTotalsToday[person]= dateKey==todayKey ? (personTotalsToday[person]||0) + amount : (personTotalsToday[person]||0);
+  });
+
+  // Build alert message
+  let alertMessage = "🧾 Expense Summary:\n";
+
+  // Latest month (if any)
+  const months = Object.keys(monthlyTotals).sort().reverse();
+  if (months.length) {
+    alertMessage += `• ${months[0]}: ₹${monthlyTotals[months[0]].toLocaleString()}\n`;
+  }
+
+  // Latest FY (if any)
+  const fys = Object.keys(fyTotals).sort().reverse();
+  if (fys.length) {
+    alertMessage += `• ${fys[0]}: ₹${fyTotals[fys[0]].toLocaleString()}\n`;
+  }
+
+  // Category Breakdown
+  alertMessage += "• By Category:\n";
+  for (let [cat, amt] of Object.entries(categoryTotals)) {
+    alertMessage += `  - ${cat}: ₹${amt.toLocaleString()}\n`;
+  }
+
+  return {
+    monthlyTotals,
+    fyTotals,
+    categoryTotals,
+    alertMessage,
+    personTotalsCurrentMonth,
+    personTotalsCurrentYear,
+    personTotalsToday
+  };
+}    
+
+
+function getUpcomingExpenses() {
+  const sheet = SpreadsheetApp.getActive().getSheetByName(SHEET_UPCOMING);
+  const data = sheet.getDataRange().getValues();
+  const today = new Date();
+  const upcoming = [];
+
+  data.slice(1).forEach(row => {
+    const dueDate = new Date(row[1]);
+    const diff = Math.floor((dueDate - today) / (1000 * 3600 * 24));
+    if (diff >= 0 && diff <= 7 && row[4]) {
+      upcoming.push(row);
     }
+  });
 
-    // Expose logout
-    function logout() {
-      localStorage.removeItem("loggedInUser");
-      loader.style.display = "block";
-      iframe.classList.remove("loaded");
-      iframe.src = "https://script.google.com/macros/s/AKfycbzelJCOF9n7_9aKECEUmT90xwgsKfy1jLuZJxSvYDFrPZH1SSa_-LNLc96mPbXCdl1Baw/exec";
+  return upcoming;
+}
+
+function checkLimits() {
+  const expenseSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_EXPENSES);
+  const limitSheet = SpreadsheetApp.getActive().getSheetByName(SHEET_LIMITS);
+
+  const expenses = expenseSheet.getDataRange().getValues().slice(1);
+  const limits = Object.fromEntries(limitSheet.getDataRange().getValues().slice(1));
+  const totals = {};
+  let overallTotal = 0;
+
+  expenses.forEach(([date, category, amount, desc, type]) => {
+    if (type !== "Fixed") {
+      totals[category] = (totals[category] || 0) + Number(amount);
+      overallTotal += Number(amount);
     }
+  });
 
-    // Prevent back nav issues
-    window.history.pushState(null, "", window.location.href);
-    window.onpopstate = function () {
-      window.history.pushState(null, "", window.location.href);
-    };
+  let warnings = [];
+  for (let cat in limits) {
+    if (cat === "Overall" && overallTotal > limits[cat]) {
+      warnings.push(`Overall limit exceeded: ${overallTotal}/${limits[cat]}`);
+      sendWarning(`Overall limit exceeded: ${overallTotal}/${limits[cat]}`);
+    } else if (cat !== "Overall" && totals[cat] > limits[cat]) {
+      warnings.push(`Category "${cat}" limit exceeded: ${totals[cat]}/${limits[cat]}`);
+      sendWarning(`Category "${cat}" limit exceeded: ${totals[cat]}/${limits[cat]}`);
+    }
+  }
 
-    // Make functions available inside iframe
-    window.redirectToTrackerPage = redirectToTrackerPage;
-    window.logout = logout;
-  </script>
-</body>
-</html>
+  return warnings;
+}
+
+// --- SEND ALERTS ---
+function sendWarning(message) {
+  MailApp.sendEmail(USER_EMAIL, "Expense Limit Warning", message);
+  sendWhatsApp(message);
+}
+
+function sendWhatsApp(message) {
+  const payload = {
+    to: USER_WHATSAPP_NUMBER,
+    from: TWILIO_NUMBER,
+    body: message
+  };
+
+  const options = {
+    method: "post",
+    headers: {
+      Authorization: "Basic " + Utilities.base64Encode(TWILIO_ACCOUNT_SID + ":" + TWILIO_AUTH_TOKEN)
+    },
+    payload: payload
+  };
+
+  UrlFetchApp.fetch("https://api.twilio.com/2010-04-01/Accounts/" + TWILIO_ACCOUNT_SID + "/Messages.json", options);
+}
+
+// --- DAILY REMINDER ---
+function dailyReminder() {
+  const upcoming = getUpcomingExpenses();
+  if (upcoming.length > 0) {
+    let msg = "Upcoming Expenses:\n";
+    upcoming.forEach(row => {
+      msg += `${row[0]} on ${row[1]}: ₹${row[2]}\n`;
+    });
+    MailApp.sendEmail(USER_EMAIL, "Upcoming Expenses Reminder", msg);
+    sendWhatsApp(msg);
+  }
+}
+
+function savePolicy(data) {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME_POLICIES);
+    if (!sheet) throw new Error("Policies sheet not found.");
+  
+    sheet.appendRow([
+      new Date(data.dueDate),
+      data.policyNumber,
+      data.tenure,
+      data.repeat,
+      data.category,
+      data.person,
+      data.notes,
+      new Date()
+    ]);
+  }
+  
+  function saveFile(data) {
+    const folder = DriveApp.getFolderById(FOLDER_ID_FILES);
+    const blob = Utilities.newBlob(Utilities.base64Decode(data.fileBase64), data.fileMimeType, data.fileOriginalName);
+    const file = folder.createFile(blob);
+  
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME_FILES);
+    if (!sheet) throw new Error("Files sheet not found.");
+  
+    sheet.appendRow([
+      data.fileName,
+      data.description,
+      data.fileType,
+      data.person,
+      new Date(),
+      file.getUrl()
+    ]);
+  }
+  
