@@ -100,14 +100,15 @@
   }
 
   window.addEventListener("message", function (event) {
-    console.log("📩 Received postMessage:", event);
+  if (event.data?.type === "LOGOUT") {
+    console.log("✅ Received logout request from iframe");
 
-    if (event.origin.includes("googleusercontent.com") &&
-        event.data && event.data.action === "logout") {
-      console.log("✅ Logout message received from iframe");
-      performLogout(); // Your logout logic here
-    } else {
-      console.warn("❌ Message ignored due to origin or format");
+    // Clear any localStorage if needed here
+    localStorage.removeItem("loggedInUser");
+
+    // Reload iframe to login page
+    document.getElementById("app-frame").src =
+      "https://script.google.com/macros/s/AKfycbzelJCOF9n7_9aKECEUmT90xwgsKfy1jLuZJxSvYDFrPZH1SSa_-LNLc96mPbXCdl1Baw/exec";
     }
   });
   function checkLogoutFlag() {
