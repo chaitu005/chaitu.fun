@@ -100,12 +100,27 @@
   }
 
   window.addEventListener("message", function (event) {
-    alert(JSON.stringify(event))
-    if (event.data && event.data.action === "logout") {
-      console.log("📩 Received logout from iframe");
-      performLogout();
+    console.log("📩 Received postMessage:", event);
+
+    if (event.origin.includes("googleusercontent.com") &&
+        event.data && event.data.action === "logout") {
+      console.log("✅ Logout message received from iframe");
+      performLogout(); // Your logout logic here
+    } else {
+      console.warn("❌ Message ignored due to origin or format");
     }
   });
+  function checkLogoutFlag() {
+    const logoutFlag = localStorage.getItem("logoutRequested");
+    if (logoutFlag === "true") {
+      console.log("🔁 Detected logout flag. Redirecting to login page...");
+      localStorage.removeItem("logoutRequested");
+      document.getElementById("app-frame").src = SCRIPT_URL;
+    }
+  }
+
+  // Check every second
+  setInterval(checkLogoutFlag, 1000);
 
     window.history.pushState(null, "", window.location.href);
     window.onpopstate = function () {
