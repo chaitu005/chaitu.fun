@@ -53,43 +53,75 @@
     const iframe = document.getElementById("app-frame");
     const loader = document.getElementById("loader");
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzelJCOF9n7_9aKECEUmT90xwgsKfy1jLuZJxSvYDFrPZH1SSa_-LNLc96mPbXCdl1Baw/exec";
-  
-    // Monitor iframe URL
-    const observer = new MutationObserver(() => {
-      try {
-        const currentUrl = iframe.contentWindow.location.href;
-        if (currentUrl.includes("logout=true")) {
-          console.log("🔁 Detected logout trigger from iframe");
-          performLogout();
+
+
+    // Initial load: show loader until iframe is ready
+    iframe.onload = function () {
+      setTimeout(() => {
+        loader.style.display = "none";
+        iframe.classList.add("loaded");
+      }, 200); // smoother fade
+    };
+
+    function redirectToTrackerPage() {
+      loader.style.display = "block";
+      iframe.classList.remove("loaded");
+      iframe.src = SCRIPT_URL+"?action=getHomePage";
+    }
+
+  function logout1() {
+    const iframe = document.getElementById("app-frame");
+
+  function logout() {
+    const iframe = document.getElementById("app-frame");
+    const loader = document.getElementById("loader");
+
+    console.log("🔄 Logging out...");
+    localStorage.removeItem("loggedInUser");
+
+    loader.style.display = "block";
+    iframe.style.display = "none";
+
+    fetch(SCRIPT_URL + "?action=getLoginPage")
+      .then(res => res.text())
+      .then(html => {
+        console.log("✅ Login HTML received");
+        const blob = new Blob([html], { type: "text/html" });
+        const loginBlobURL = URL.createObjectURL(blob);
+        iframe.src = loginBlobURL;
+
+        iframe.onload = () => {
+          loader.style.display = "none";
+          iframe.style.display = "block";
+        };
+      })
+      .catch(err => {
+        console.error("❌ Error loading login page:", err);
+        loader.innerText = "Error loading login page.";
+      });
+  }
+
+    window.addEventListener("message", function (event) {
+      const trustedOrigin = "https://script.google.com";
+
+      if (event.origin.startsWith(trustedOrigin)) {
+        if (event.data === "logout") {
+          console.log("🔐 Received logout message from iframe");
+          localStorage.removeItem("loggedInUser");
+          iframe.src = SCRIPT_URL;
         }
-      } catch (e) {
-        // Can't read due to CORS, fallback check
+      } else {
+        console.warn("⚠️ Ignoring message from untrusted origin:", event.origin);
       }
     });
-  
-    observer.observe(iframe, { attributes: true, attributeFilter: ["src"] });
-  
-    function performLogout() {
-      localStorage.removeItem("loggedInUser");
-      loader.style.display = "block";
-      iframe.style.display = "none";
-  
-      fetch(SCRIPT_URL + "?action=getLoginPage")
-        .then(res => res.text())
-        .then(html => {
-          const blob = new Blob([html], { type: "text/html" });
-          iframe.src = URL.createObjectURL(blob);
-          iframe.onload = () => {
-            loader.style.display = "none";
-            iframe.style.display = "block";
-          };
-        })
-        .catch(err => {
-          console.error("❌ Error loading login page", err);
-          loader.innerText = "Error loading login page.";
-        });
-    }
+
+    window.history.pushState(null, "", window.location.href);
+    window.onpopstate = function () {
+      window.history.pushState(null, "", window.location.href);
+    };
+
+    window.redirectToTrackerPage = redirectToTrackerPage;
+    window.logout = logout;
   </script>
-  
 </body>
 </html>
