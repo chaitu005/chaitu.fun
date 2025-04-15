@@ -99,19 +99,13 @@
       });
   }
 
-    window.addEventListener("message", function (event) {
-      const trustedOrigin = "https://script.google.com";
-
-      if (event.origin.startsWith(trustedOrigin)) {
-        if (event.data === "logout") {
-          console.log("🔐 Received logout message from iframe");
-          localStorage.removeItem("loggedInUser");
-          iframe.src = SCRIPT_URL;
-        }
-      } else {
-        console.warn("⚠️ Ignoring message from untrusted origin:", event.origin);
-      }
-    });
+  window.addEventListener("message", function (event) {
+    alert(JSON.stringify(event))
+    if (event.data && event.data.action === "logout") {
+      console.log("📩 Received logout from iframe");
+      performLogout();
+    }
+  });
 
     window.history.pushState(null, "", window.location.href);
     window.onpopstate = function () {
