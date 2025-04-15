@@ -69,8 +69,6 @@
       iframe.src = SCRIPT_URL+"?action=getHomePage";
     }
 
-  function logout1() {
-    const iframe = document.getElementById("app-frame");
 
   function logout() {
     const iframe = document.getElementById("app-frame");
@@ -122,6 +120,39 @@
 
     window.redirectToTrackerPage = redirectToTrackerPage;
     window.logout = logout;
-  </script>
+    const observer = new MutationObserver(() => {
+      try {
+        const currentUrl = iframe.contentWindow.location.href;
+        if (currentUrl.includes("logout=true")) {
+          console.log("🔁 Detected logout trigger from iframe");
+          performLogout();
+        }
+      } catch (e) {
+        console.log("Can't read due to CORS, fallback check")
+      }
+    });
+    observer.observe(iframe, { attributes: true, attributeFilter: ["src"] });
+  
+    function performLogout() {
+      localStorage.removeItem("loggedInUser");
+      loader.style.display = "block";
+      iframe.style.display = "none";
+
+      fetch(SCRIPT_URL + "?action=getLoginPage")
+        .then(res => res.text())
+        .then(html => {
+          const blob = new Blob([html], { type: "text/html" });
+          iframe.src = URL.createObjectURL(blob);
+          iframe.onload = () => {
+            loader.style.display = "none";
+            iframe.style.display = "block";
+          };
+        })
+        .catch(err => {
+          console.error("❌ Error loading login page", err);
+          loader.innerText = "Error loading login page.";
+        });
+    }
+</script>
 </body>
 </html>
