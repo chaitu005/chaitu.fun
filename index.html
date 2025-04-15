@@ -53,112 +53,43 @@
     const iframe = document.getElementById("app-frame");
     const loader = document.getElementById("loader");
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzelJCOF9n7_9aKECEUmT90xwgsKfy1jLuZJxSvYDFrPZH1SSa_-LNLc96mPbXCdl1Baw/exec";
-
-
-    // Initial load: show loader until iframe is ready
-    iframe.onload = function () {
-      setTimeout(() => {
-        loader.style.display = "none";
-        iframe.classList.add("loaded");
-      }, 200); // smoother fade
-    };
-
-    // Expose to iframe: redirect to tracker after login
-    function redirectToTrackerPage() {
-      loader.style.display = "block";
-      iframe.classList.remove("loaded");
-      iframe.src = SCRIPT_URL+"?action=getHomePage";
-    }
-
-    // Expose logout
-    // function logout() {
-    //   console.log("⏳ Parent logout called...");
-    //   localStorage.removeItem("loggedInUser");
-    //   loader.style.display = "block";
-    //   iframe.classList.remove("loaded");
-    //   iframe.src = SCRIPT_URL+"?action=getLoginPage";;
-    // }
-
-    function logout1() {
-      const iframe = document.getElementById("app-frame");
-
-      // if (iframe) {
-      //   console.log("🧼 Resetting iframe to login page...");
-      //   iframe.style.display = "none";
-      //   iframe.src = SCRIPT_URL+"?action=getLoginPage";
-
-      //   // Optional loading state
-      //   const loader = document.getElementById("loader");
-      //   if (loader) loader.style.display = "block";
-
-      //   // Wait for iframe to load again
-      //   iframe.onload = function () {
-      //     console.log("✅ Login page loaded in iframe.");
-      //     iframe.style.display = "block";
-      //     if (loader) loader.style.display = "none";
-      //   };
-      // } else {
-      //   console.log("❌ iframe not found in parent.");
-      // }
-    }
-
-
-  function logout() {
-    const iframe = document.getElementById("app-frame");
-    const loader = document.getElementById("loader");
-
-    console.log("🔄 Logging out...");
-    localStorage.removeItem("loggedInUser");
-
-    loader.style.display = "block";
-    iframe.style.display = "none";
-
-    // Load login HTML from Google Apps Script
-    fetch(SCRIPT_URL + "?action=getLoginPage")
-      .then(res => res.text())
-      .then(html => {
-        console.log("✅ Login HTML received");
-        const blob = new Blob([html], { type: "text/html" });
-        const loginBlobURL = URL.createObjectURL(blob);
-        iframe.src = loginBlobURL;
-
-        iframe.onload = () => {
-          loader.style.display = "none";
-          iframe.style.display = "block";
-        };
-      })
-      .catch(err => {
-        console.error("❌ Error loading login page:", err);
-        loader.innerText = "Error loading login page.";
-      });
-  }
-
-
-
-    window.addEventListener("message", function (event) {
-      // Only allow messages from your Apps Script web app origin
-      const trustedOrigin = "https://script.google.com";
-
-      if (event.origin.startsWith(trustedOrigin)) {
-        if (event.data === "logout") {
-          console.log("🔐 Received logout message from iframe");
-          localStorage.removeItem("loggedInUser");
-          iframe.src = SCRIPT_URL;
+  
+    // Monitor iframe URL
+    const observer = new MutationObserver(() => {
+      try {
+        const currentUrl = iframe.contentWindow.location.href;
+        if (currentUrl.includes("logout=true")) {
+          console.log("🔁 Detected logout trigger from iframe");
+          performLogout();
         }
-      } else {
-        console.warn("⚠️ Ignoring message from untrusted origin:", event.origin);
+      } catch (e) {
+        // Can't read due to CORS, fallback check
       }
     });
-
-    // Prevent back nav issues
-    window.history.pushState(null, "", window.location.href);
-    window.onpopstate = function () {
-      window.history.pushState(null, "", window.location.href);
-    };
-
-    // Make functions available inside iframe
-    window.redirectToTrackerPage = redirectToTrackerPage;
-    window.logout = logout;
+  
+    observer.observe(iframe, { attributes: true, attributeFilter: ["src"] });
+  
+    function performLogout() {
+      localStorage.removeItem("loggedInUser");
+      loader.style.display = "block";
+      iframe.style.display = "none";
+  
+      fetch(SCRIPT_URL + "?action=getLoginPage")
+        .then(res => res.text())
+        .then(html => {
+          const blob = new Blob([html], { type: "text/html" });
+          iframe.src = URL.createObjectURL(blob);
+          iframe.onload = () => {
+            loader.style.display = "none";
+            iframe.style.display = "block";
+          };
+        })
+        .catch(err => {
+          console.error("❌ Error loading login page", err);
+          loader.innerText = "Error loading login page.";
+        });
+    }
   </script>
+  
 </body>
 </html>
