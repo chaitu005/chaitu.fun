@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Expense Tracker</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="./style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+<body class="bg-light">
+
+<div class="container mt-4">
+  <h2 class="text-center">Family Expenses Tracker
+  </h2>
+  
+  <div class="card p-3">
+    <div class="d-flex justify-content-between align-items-center"><h4 id="formHeading">Add Expense</h4>
+      <div class="d-flex align-items-center gap-3">
+        <!-- Type Radios -->
+        <div class="btn-group mb-3" role="group">
+          <input type="radio" class="btn-check" name="formType" id="expenseRadio" value="expense" autocomplete="off" checked>
+          <label class="btn btn-outline-primary" for="expenseRadio">Expense</label>
+        
+          <input type="radio" class="btn-check" name="formType" id="policyRadio" value="policy" autocomplete="off">
+          <label class="btn btn-outline-primary" for="policyRadio">Policy</label>
+        
+          <input type="radio" class="btn-check" name="formType" id="fileRadio" value="file" autocomplete="off">
+          <label class="btn btn-outline-primary" for="fileRadio">File</label>
+        </div>
+                
+        <!-- Logout Dropdown -->
+        <div class="dropdown">
+          <button class="btn btn-light" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <span class="fs-4">⋮</span>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item text-danger" href="#" onclick="logout()">Logout</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>    
+
+    <div id="expenseForm" class="card p-3 mt-3 form-section">
+      <!-- Put your expense form here -->
+      <div class="row">
+        <div class="col-md-6">
+          <label>Date:</label>
+          <input type="date" id="date" class="form-control">
+        </div>
+        <div class="col-md-6">
+          <label>Category:</label>
+          <select id="category" class="form-control">
+            <option selected="selected">Food</option>
+            <option>Vegetbles</option>
+            <option>Petrol</option>
+            <option>Travel</option>
+            <option>Rent</option>
+            <option>Entertainment</option>
+            <option>Shopping</option>
+            <option>Others</option>
+          </select>
+        </div>
+        <div class="col-md-6 mt-2">
+          <label>Amount:</label>
+          <input type="number" id="amount" class="form-control">
+        </div>
+       <div class="col-md-6 mt-2">
+          <label class="form-label">Person:</label>
+          <div class="custom-radio-group">
+            <label class="custom-radio">
+              Chaitu
+              <input type="radio" name="person" value="Chaitu" checked >
+              <span></span>
+            </label>
+            <label class="custom-radio">
+              Lassi
+              <input type="radio" name="person" value="Lassi">
+              <span></span>
+            </label>
+            <label class="custom-radio">
+              Nissu
+              <input type="radio" name="person" value="Nissu">
+              <span></span>
+            </label>          
+          </div>
+        </div>
+  
+        <div class="col-md-12 mt-2">
+          <label>Notes:</label>
+          <input type="text" id="notes" class="form-control">
+        </div>
+  
+        <div class="col-md-12 mt-3">
+          <input type="submit" class="btn btn-primary w-100" onclick="addExpense()" value="Add Expense" />
+        </div>
+      </div>
+    </div>
+    
+    <div id="policyForm" class="card p-3 mt-3 form-section d-none">
+      <div class="row mb-3">
+        <div class="col-md-4">
+          <label class="form-label">Due Date:</label>
+          <input type="date" name="dueDate" id="policyDueDate" class="form-control" value="<?= new Date().toISOString().split('T')[0] ?>">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Policy Number:</label>
+          <input type="text" name="policyNumber" class="form-control" placeholder="e.g., LIC12345678">
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Tenure (years):</label>
+          <input type="number" name="tenure" class="form-control" value="10">
+        </div>
+      </div>
+    
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">Repeat:</label>
+          <select class="form-select" name="repeat">
+            <option>Yearly</option>
+            <option>Half-Yearly</option>
+            <option>Quarterly</option>
+            <option>Monthly</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Category:</label>
+          <select class="form-select" name="category">
+            <option>Insurance</option>
+            <option>Health</option>
+            <option>Investment</option>
+            <option>Loan</option>
+          </select>
+        </div>
+      </div>
+    
+      <div class="mb-3">
+        <label class="form-label">Person:</label><br />      
+        <div class="custom-radio-group">
+          <label class="custom-radio">
+            Chaitu
+            <input type="radio" name="policyPerson" value="Chaitu" checked >
+            <span></span>
+          </label>
+          <label class="custom-radio">
+            Lassi
+            <input type="radio" name="policyPerson" value="Lassi">
+            <span></span>
+          </label>
+          <label class="custom-radio">
+            Nissu
+            <input type="radio" name="policyPerson" value="Nissu">
+            <span></span>
+          </label>
+          <label class="custom-radio">
+            Others
+            <input type="radio" name="policyPerson" value="Nissu">
+            <span></span>
+          </label>          
+        </div>
+      </div>
+    
+      <div class="mb-3">
+        <label class="form-label">Notes:</label>
+        <input type="text" name="notes" class="form-control" placeholder="Optional notes...">
+      </div>
+    
+      <button class="btn btn-primary w-100" onclick="submitPolicyForm()">Submit</button>
+    </div>
+    
+      
+    <!-- FILE Upload Form -->
+    <div id="fileForm" class="card p-3 mt-3 form-section d-none">
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">File Name:</label>
+          <input type="text" name="fileName" class="form-control" placeholder="e.g., Bill Receipt">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Upload File:</label>
+          <input type="file" name="uploadedFile" class="form-control">
+        </div>
+      </div>
+    
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <label class="form-label">File Type:</label>
+          <select class="form-select" name="fileType">
+            <option>Medical File</option>
+            <option>Policy</option>
+            <option>House Tax</option>
+            <option>Income Tax</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Person:</label><br />
+          <div class="custom-radio-group">
+            <label class="custom-radio">
+              Chaitu
+              <input type="radio" name="filePerson" value="Chaitu" checked >
+              <span></span>
+            </label>
+            <label class="custom-radio">
+              Lassi
+              <input type="radio" name="filePerson" value="Lassi">
+              <span></span>
+            </label>
+            <label class="custom-radio">
+              Nissu
+              <input type="radio" name="filePerson" value="Nissu">
+              <span></span>
+            </label>
+            <label class="custom-radio">
+              Others
+              <input type="radio" name="filePerson" value="Nissu">
+              <span></span>
+            </label>          
+          </div>
+        </div>
+      </div>
+    
+      <div class="mb-3">
+        <label class="form-label">Description:</label>
+        <input type="text" name="description" class="form-control" placeholder="Short description">
+      </div>
+    
+      <button class="btn btn-primary w-100" onclick="submitFileForm()">Upload</button>
+    </div>
+    
+    
+    
+    
+  </div>
+
+  <div class="card p-3 mt-3">
+    <h4>Totals</h4>
+    <p>Monthly Total: ₹<span id="monthlyTotal">0</span></p>
+    <p>Yearly Total: ₹<span id="yearlyTotal">0</span></p>
+    <p>Category Total: <span id="categoryTotal">0</span></p>
+    <p>Person Total (Current Month): <span id="personTotalsCurrentMonth">0</span></p>
+    <p>Person Total (Current Year): <span id="personTotalsCurrentYear">0</span></p>
+    <p>Person Total (Today): <span id="personTotalsToday">0</span></p>
+    <!-- <p id="alertMessage" class="warning"></p> -->
+  </div>
+
+  <div class="card p-3 mt-3">
+    <h4>Expense List</h4>
+    <div class="row mb-3">
+      <div class="col-md-3">
+        <label>Filter by Person:</label>
+        <select id="filterPerson" class="form-control" onchange="applyFilters()">
+          <option value="">All</option>
+          <option value="Chaitu">Chaitu</option>
+          <option value="Lassi">Lassi</option>
+          <option value="Nissu">Nissu</option>
+          <option value="Common">Common</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label>Filter by Category:</label>
+        <select id="filterCategory" class="form-control" onchange="applyFilters()">
+          <option value="">All</option>
+          <option>Food</option>
+          <option>Vegetbles</option>
+          <option>Petrol</option>
+          <option>Travel</option>
+          <option>Rent</option>
+          <option>Entertainment</option>
+          <option>Shopping</option>
+          <option>Bills</option>
+          <option>Others</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label>From Date:</label>
+        <input type="date" id="fromDate" class="form-control" onchange="applyFilters()">
+      </div>
+      <div class="col-md-3">
+        <label>To Date:</label>
+        <input type="date" id="toDate" class="form-control" onchange="applyFilters()">
+      </div>
+    </div>
+    <div class="table-responsive custom-scroll-table">
+      <table class="expensesTable table table-striped mb-0">
+        <thead class="table-sticky-header">
+          <tr>
+            <th onclick="sortTable('Date')">Date 🔽</th>
+            <th onclick="sortTable('Category')">Category</th>
+            <th onclick="sortTable('Amount')">Amount</th>
+            <!-- <th onclick="sortTable('Type')">Type</th> -->
+            <th onclick="sortTable('Description')">Description</th>
+            <th onclick="sortTable('Person')">Person</th>
+            <th onclick="sortTable('AddedBy')">Added By</th>
+          </tr>
+        </thead>
+        <tbody id="expenseTable"></tbody>
+      </table>
+   </div>
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div id="recordCount" class="text-muted"></div>
+    
+      <div class="d-flex align-items-center gap-3">
+        <div class="form-check form-check-inline mb-0">
+          <input class="form-check-input" type="radio" name="export" id="fullExport" value="1">
+          <label class="form-check-label" for="fullExport">Full Export</label>
+        </div>
+        <div class="form-check form-check-inline mb-0">
+          <input class="form-check-input" type="radio" name="export" id="filteredExport" value="0" checked>
+          <label class="form-check-label" for="filteredExport">Filtered Export</label>
+        </div>
+      </div>
+    
+      <div class="d-flex align-items-center gap-2">
+        <button class="icon-btn" onclick="prevPage()" title="Previous Page">
+          <i class="bi bi-arrow-left"></i>
+        </button>
+        <span id="pageInfo" class="mx-2 small text-muted"></span>
+        <button class="icon-btn" onclick="nextPage()" title="Next Page">
+          <i class="bi bi-arrow-right"></i>
+        </button>
+      </div>
+      
+    </div>
+    
+  </div>
+
+  <div class="mt-3">
+    <button class="btn btn-success w-100" onclick="exportToExcel()">Export to Excel</button>
+  </div>
+</div>
+<script src="script.js"></script>
+</body>
+</html>
