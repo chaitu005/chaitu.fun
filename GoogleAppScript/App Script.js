@@ -15,6 +15,13 @@ const TWILIO_WHATSAPP_FROM = "whatsapp:+14155238886";
 const WHATSAPP_TO = "whatsapp:+919704950085";
 
 // --- CORS SETUP ---
+function loadLoginPage() {
+  return HtmlService.createHtmlOutputFromFile('login').getContent();
+}
+
+function loadHomePage() {
+  return HtmlService.createHtmlOutputFromFile('index').getContent();
+}
 
 function doPost(e) {
   try {
@@ -38,28 +45,140 @@ function doPost(e) {
   }
 }
 
+// function doGet(e) {
+//   const action = e.parameter.action;
+
+//   if (action) {
+//     switch (action) {
+//       case "getLoginPage":  
+//         const loginHtmlRaw = HtmlService.createHtmlOutputFromFile("login").getContent();
+//         Logger.log(loginHtmlRaw);  
+//         return ContentService.createTextOutput(loginHtmlRaw).setMimeType(ContentService.MimeType.HTML);
+
+//       case "getHomePage":
+//         var html =  HtmlService.createHtmlOutputFromFile('index')
+//           .setTitle("Family Expense Tracker")
+//           .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+//         Logger.log(html.getContent());
+//         return html;
+//       case "getExpenses":
+//         return jsonResponse(getExpenses());
+//       case "getTotals":
+//         return jsonResponse(getTotals());
+//       case "checkLimits":
+//         return jsonResponse(checkLimits());
+//       case "getUpcoming":
+//         return jsonResponse(getUpcomingExpenses());
+//       default:
+//         return ContentService.createTextOutput("❌ Unknown action.");
+//     }
+//   }
+
+//   // if (e.parameter.image === "bg") {
+//   //   const fileId = "1IfgCTHyctJBmJ0NdqrskX0bGt2vKZ2OX"; 
+//   //   const file = DriveApp.getFileById(fileId);
+//   //   const blob = file.getBlob();
+
+//   //   return ContentService.createOutput(blob.getBytes())
+//   //                        .setMimeType(blob.getContentType());
+//   // }
+
+//   return HtmlService.createTemplateFromFile('login')
+//     .evaluate()
+//     .setTitle("Login")
+//     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+// }
+
+// function doGet(e) {
+//   const action = e.parameter.action;
+
+//   if (action) {
+//     switch (action) {
+//       case "getLoginPage":
+//         Logger.log("▶️ getLoginPage requested");
+//         return HtmlService.createTemplateFromFile('login')
+//           .evaluate()
+//           .setTitle("Login")
+//           .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+
+//       case "getHomePage":
+//           return HtmlService.createTemplateFromFile("index")
+//             .evaluate()
+//             .setTitle("Family Expense Tracker")
+//             .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+
+//       case "getExpenses":
+//         return jsonResponse(getExpenses());
+
+//       case "getTotals":
+//         return jsonResponse(getTotals());
+
+//       case "checkLimits":
+//         return jsonResponse(checkLimits());
+
+//       case "getUpcoming":
+//         return jsonResponse(getUpcomingExpenses());
+
+//       default:
+//         return ContentService.createTextOutput("❌ Unknown action");
+//     }
+//   }
+//   Logger.log("▶️ getLoginPage requested");
+//   return HtmlService.createHtmlOutputFromFile('login')
+//     .setTitle("Login")
+//   .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);  
+
+// }
 function doGet(e) {
   const action = e.parameter.action;
 
-  switch (action) {
-    case "getExpenses":
-      return jsonResponse(getExpenses());
-    case "getTotals":
-      return jsonResponse(getTotals());    
-    case "checkLimits":
-      return jsonResponse(checkLimits());
-    case "getUpcoming":
-      return jsonResponse(getUpcomingExpenses());
-    default:
-      return ContentService.createTextOutput("✅ Expense Tracker API is running.");
+  if (action) {
+    switch (action) {
+      case "getLoginPage":
+        const html = HtmlService.createTemplateFromFile("login")
+        .evaluate()
+        .setTitle("Login")
+        .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+        Logger.log("✅ Serving getLoginPage");
+        return html;
+
+      case "getHomePage":
+        const html1 = HtmlService.createTemplateFromFile("index")
+        .evaluate()
+        .setTitle("Home")
+        .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+        Logger.log("✅ Serving getHomePage");
+        return html1;
+
+      case "getExpenses":
+        return jsonResponse(getExpenses());
+      case "getTotals":
+        return jsonResponse(getTotals());
+      case "checkLimits":
+        return jsonResponse(checkLimits());
+      case "getUpcoming":
+        return jsonResponse(getUpcomingExpenses());
+      default:
+        return ContentService.createTextOutput("❌ Unknown action.");
+    }
   }
+
+  return HtmlService.createTemplateFromFile("login")
+    .evaluate()
+    .setTitle("Default Login")
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+
+function testFileAccess() {
+  var file = DriveApp.getFileById("1IfgCTHyctJBmJ0NdqrskX0bGt2vKZ2OX");
+  Logger.log(file.getName());
 }
 
 function jsonResponse(data) {
   return ContentService.createTextOutput(JSON.stringify(data))
     .setMimeType(ContentService.MimeType.JSON);
 }
-
 
 // --- FUNCTIONS ---
 function addExpense(data) {
@@ -101,11 +220,9 @@ function validateUser(data) {
   return { isValid: isUserValid };
 }
 
-
 function FormatDate(dateVal) {  
     return Utilities.formatDate(dateVal, Session.getScriptTimeZone(), "yyyy-MM-dd");
-  }
-  
+}
 
 function getTotals() {
   const sheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_EXPENSES);
@@ -183,7 +300,6 @@ function getTotals() {
     personTotalsToday
   };
 }    
-
 
 function getUpcomingExpenses() {
   const sheet = SpreadsheetApp.getActive().getSheetByName(SHEET_UPCOMING);
@@ -302,4 +418,3 @@ function savePolicy(data) {
       file.getUrl()
     ]);
   }
-  
