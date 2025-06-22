@@ -33,10 +33,10 @@ function doPost(e) {
         return jsonResponse(addExpense(request.data));
       case "validateUser":
           return jsonResponse(validateUser(request.data));
-      case "savePolicy":
-           return jsonResponse(savePolicy(request.data));
-      case "saveFile":
-           return jsonResponse(saveFile(request.data));
+      case "addPolicy":
+           return jsonResponse(addPolicy(request.data));
+      case "addFile":
+           return jsonResponse(addFile(request.data));
       default:
            return jsonResponse({ error: "Invalid action" });
     }
@@ -45,90 +45,6 @@ function doPost(e) {
   }
 }
 
-// function doGet(e) {
-//   const action = e.parameter.action;
-
-//   if (action) {
-//     switch (action) {
-//       case "getLoginPage":  
-//         const loginHtmlRaw = HtmlService.createHtmlOutputFromFile("login").getContent();
-//         Logger.log(loginHtmlRaw);  
-//         return ContentService.createTextOutput(loginHtmlRaw).setMimeType(ContentService.MimeType.HTML);
-
-//       case "getHomePage":
-//         var html =  HtmlService.createHtmlOutputFromFile('index')
-//           .setTitle("Family Expense Tracker")
-//           .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
-//         Logger.log(html.getContent());
-//         return html;
-//       case "getExpenses":
-//         return jsonResponse(getExpenses());
-//       case "getTotals":
-//         return jsonResponse(getTotals());
-//       case "checkLimits":
-//         return jsonResponse(checkLimits());
-//       case "getUpcoming":
-//         return jsonResponse(getUpcomingExpenses());
-//       default:
-//         return ContentService.createTextOutput("❌ Unknown action.");
-//     }
-//   }
-
-//   // if (e.parameter.image === "bg") {
-//   //   const fileId = "1IfgCTHyctJBmJ0NdqrskX0bGt2vKZ2OX"; 
-//   //   const file = DriveApp.getFileById(fileId);
-//   //   const blob = file.getBlob();
-
-//   //   return ContentService.createOutput(blob.getBytes())
-//   //                        .setMimeType(blob.getContentType());
-//   // }
-
-//   return HtmlService.createTemplateFromFile('login')
-//     .evaluate()
-//     .setTitle("Login")
-//     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
-// }
-
-// function doGet(e) {
-//   const action = e.parameter.action;
-
-//   if (action) {
-//     switch (action) {
-//       case "getLoginPage":
-//         Logger.log("▶️ getLoginPage requested");
-//         return HtmlService.createTemplateFromFile('login')
-//           .evaluate()
-//           .setTitle("Login")
-//           .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
-
-//       case "getHomePage":
-//           return HtmlService.createTemplateFromFile("index")
-//             .evaluate()
-//             .setTitle("Family Expense Tracker")
-//             .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
-
-//       case "getExpenses":
-//         return jsonResponse(getExpenses());
-
-//       case "getTotals":
-//         return jsonResponse(getTotals());
-
-//       case "checkLimits":
-//         return jsonResponse(checkLimits());
-
-//       case "getUpcoming":
-//         return jsonResponse(getUpcomingExpenses());
-
-//       default:
-//         return ContentService.createTextOutput("❌ Unknown action");
-//     }
-//   }
-//   Logger.log("▶️ getLoginPage requested");
-//   return HtmlService.createHtmlOutputFromFile('login')
-//     .setTitle("Login")
-//   .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);  
-
-// }
 function doGet(e) {
   const action = e.parameter.action;
 
@@ -152,6 +68,10 @@ function doGet(e) {
 
       case "getExpenses":
         return jsonResponse(getExpenses());
+      case "getPolicies":
+        return jsonResponse(getPolicies());
+      case "getFiles":
+        return jsonResponse(getFiles());
       case "getTotals":
         return jsonResponse(getTotals());
       case "checkLimits":
@@ -180,13 +100,6 @@ function jsonResponse(data) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-// --- FUNCTIONS ---
-function addExpense(data) {
-  const sheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_EXPENSES);
-  sheet.appendRow([data.date, data.category, data.amount, data.type, data.notes,data.person,data.updatedBy]);
-  return { success: true };
-}
-
 function getExpenses() {
   const sheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_EXPENSES);
   const data = sheet.getDataRange().getValues();
@@ -202,6 +115,40 @@ function getExpenses() {
     expenses.push(expense);
   }
   return { expenses };
+}
+
+function getPolicies() {
+  const sheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_POLICIES);
+  const data = sheet.getDataRange().getValues();
+  const headers = data[0];
+  const policies = [];
+
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    const policy = {};
+    for (let j = 0; j < headers.length; j++) {
+      policy[headers[j]] = (headers[j]=="Due Date"|| headers[j]=="Date")? FormatDate(row[j]):row[j];
+    }
+    policies.push(policy);
+  }
+  return { policies };
+}
+
+function getFiles() {
+  const sheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_FILES);
+  const data = sheet.getDataRange().getValues();
+  const headers = data[0];
+  const files = [];
+
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    const file = {};
+    for (let j = 0; j < headers.length; j++) {
+      file[headers[j]] = (headers[j]=="Due Date"|| headers[j]=="Date")? FormatDate(row[j]):row[j];
+    }
+    files.push(file);
+  }
+  return { files };
 }
 
 function validateUser(data) {
@@ -385,25 +332,38 @@ function dailyReminder() {
   }
 }
 
-function savePolicy(data) {
+// --- FUNCTIONS ---
+function addExpense(data) {
+  const sheet = SpreadsheetApp.getActive().getSheetByName(SHEET_NAME_EXPENSES);
+  sheet.appendRow([data.date, data.category, data.amount, data.type, data.notes,data.person,data.updatedBy,new Date()]);
+  return { success: true };
+}
+
+function addPolicy(data) {
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME_POLICIES);
     if (!sheet) throw new Error("Policies sheet not found.");
-  
+
+    const dueDateObj = new Date(data.dueDate);
+    const formattedDueDate = Utilities.formatDate(dueDateObj, Session.getScriptTimeZone(), "yyyy-MM-dd");
+    
     sheet.appendRow([
-      new Date(data.dueDate),
+      formattedDueDate,
       data.policyNumber,
       data.tenure,
       data.repeat,
-      data.category,
+      data.premium,
+      data.policyCategory,
       data.person,
       data.notes,
+      data.addedBy,
       new Date()
     ]);
+    return { success: true};
   }
   
-  function saveFile(data) {
+  function addFile(data) {
     const folder = DriveApp.getFolderById(FOLDER_ID_FILES);
-    const blob = Utilities.newBlob(Utilities.base64Decode(data.fileBase64), data.fileMimeType, data.fileOriginalName);
+    const blob = Utilities.newBlob(Utilities.base64Decode(data.fileData.fileBase64), data.fileData.fileMimeType, data.fileData.fileOriginalName);
     const file = folder.createFile(blob);
   
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME_FILES);
@@ -411,10 +371,12 @@ function savePolicy(data) {
   
     sheet.appendRow([
       data.fileName,
-      data.description,
       data.fileType,
       data.person,
+      data.description,
       new Date(),
-      file.getUrl()
+      file.getUrl(),
+      data.addedBy
     ]);
+    return jsonResponse({ success: true});
   }

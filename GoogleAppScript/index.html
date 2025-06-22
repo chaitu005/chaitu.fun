@@ -263,6 +263,9 @@
         .container .form-control:focus {
             color: #746b5e;
         }
+        .cursorPointer{
+            cursor: pointer;
+        }
 
         input:-webkit-autofill,
         input:-webkit-autofill:hover,
@@ -289,16 +292,12 @@
                         <input type="radio" class="btn-check" name="formType" id="expenseRadio" value="expense"
                             autocomplete="off" checked>
                         <label class="btn btn-outline-primary" for="expenseRadio">Expense</label>
-
                         <input type="radio" class="btn-check" name="formType" id="policyRadio" value="policy"
                             autocomplete="off">
                         <label class="btn btn-outline-primary" for="policyRadio">Policy</label>
-
-                        <input type="radio" class="btn-check" name="formType" id="fileRadio" value="file"
-                            autocomplete="off">
+                        <input type="radio" class="btn-check" name="formType" id="fileRadio" value="file" autocomplete="off">
                         <label class="btn btn-outline-primary" for="fileRadio">File</label>
                     </div>
-
                     <!-- Logout Dropdown -->
                     <div class="dropdown">
                         <button class="btn btn-light" type="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -325,6 +324,8 @@
                             <option selected="selected">Food</option>
                             <option>Vegetbles</option>
                             <option>Petrol</option>
+                            <option>Medicines</option>
+                            <option>Bills</option>
                             <option>Travel</option>
                             <option>Rent</option>
                             <option>Entertainment</option>
@@ -376,27 +377,31 @@
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Policy Number:</label>
-                        <input type="text" name="policyNumber" class="form-control" placeholder="e.g., LIC12345678">
+                        <input type="text" name="policyNumber" id="policyNumber" class="form-control" placeholder="e.g., LIC12345678">
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Tenure (years):</label>
-                        <input type="number" name="tenure" class="form-control" value="10">
+                        <input type="number" name="tenure" id="policyTenure" class="form-control" value="10">
                     </div>
                 </div>
 
                 <div class="row mb-3">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
+                        <label class="form-label">Premium Amount:</label>
+                        <input type="number" name="premium" id="policyPremium" class="form-control" value="100000">
+                    </div>
+                    <div class="col-md-4">
                         <label class="form-label">Repeat:</label>
-                        <select class="form-select" name="repeat">
+                        <select class="form-select" id="policyRepeat" name="repeat">
                             <option>Yearly</option>
                             <option>Half-Yearly</option>
                             <option>Quarterly</option>
                             <option>Monthly</option>
                         </select>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label class="form-label">Category:</label>
-                        <select class="form-select" name="category">
+                        <select class="form-select" id="policyCategory" name="category">
                             <option>Insurance</option>
                             <option>Health</option>
                             <option>Investment</option>
@@ -433,29 +438,28 @@
 
                 <div class="mb-3">
                     <label class="form-label">Notes:</label>
-                    <input type="text" name="notes" class="form-control" placeholder="Optional notes...">
+                    <input type="text" name="notes" id="policyNotes" class="form-control" placeholder="Optional notes...">
                 </div>
 
-                <button class="btn btn-primary w-100" onclick="submitPolicyForm()">Submit</button>
+                <button class="btn btn-primary w-100" onclick="addPolicy()">Submit</button>
             </div>
-
-            <!-- FILE Upload Form -->
+            
             <div id="fileForm" class="card p-3 mt-3 form-section d-none">
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label class="form-label">File Name:</label>
-                        <input type="text" name="fileName" class="form-control" placeholder="e.g., Bill Receipt">
+                        <input type="text" name="fileName" class="form-control" id="fileName" placeholder="e.g., Bill Receipt">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Upload File:</label>
-                        <input type="file" name="uploadedFile" class="form-control">
+                        <input type="file" name="uploadedFile" id="fileUploaded" class="form-control">
                     </div>
                 </div>
 
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label class="form-label">File Type:</label>
-                        <select class="form-select" name="fileType">
+                        <select class="form-select" id="fileType" name="fileType">
                             <option>Medical File</option>
                             <option>Policy</option>
                             <option>House Tax</option>
@@ -491,101 +495,241 @@
 
                 <div class="mb-3">
                     <label class="form-label">Description:</label>
-                    <input type="text" name="description" class="form-control" placeholder="Short description">
+                    <input type="text" name="description"  id="fileDescription" class="form-control" placeholder="Short description">
                 </div>
 
-                <button class="btn btn-primary w-100" onclick="submitFileForm()">Upload</button>
+                <button class="btn btn-primary w-100" onclick="addFile()">Upload</button>
             </div>
         </div>
-
-        <div class="card p-3 mt-3">
-            <h4>Totals</h4>
-            <p>Monthly Total: ₹<span id="monthlyTotal">0</span></p>
-            <p>Yearly Total: ₹<span id="yearlyTotal">0</span></p>
-            <p>Category Total: <span id="categoryTotal">0</span></p>
-            <p>Person Total (Current Month): <span id="personTotalsCurrentMonth">0</span></p>
-            <p>Person Total (Current Year): <span id="personTotalsCurrentYear">0</span></p>
-            <p>Person Total (Today): <span id="personTotalsToday">0</span></p>
-            <!-- <p id="alertMessage" class="warning"></p> -->
-        </div>
-
-        <div class="card p-3 mt-3">
-            <h4>Expense List</h4>
-            <div class="row mb-3">
-                <div class="col-md-3">
-                    <label>Filter by Person:</label>
-                    <select id="filterPerson" class="form-control" onchange="applyFilters()">
-                        <option value="">All</option>
-                        <option value="Chaitu">Chaitu</option>
-                        <option value="Lassi">Lassi</option>
-                        <option value="Nissu">Nissu</option>
-                        <option value="Common">Common</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label>Filter by Category:</label>
-                    <select id="filterCategory" class="form-control" onchange="applyFilters()">
-                        <option value="">All</option>
-                        <option>Food</option>
-                        <option>Vegetbles</option>
-                        <option>Petrol</option>
-                        <option>Travel</option>
-                        <option>Rent</option>
-                        <option>Entertainment</option>
-                        <option>Shopping</option>
-                        <option>Bills</option>
-                        <option>Others</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <label>From Date:</label>
-                    <input type="date" id="fromDate" class="form-control" onchange="applyFilters()">
-                </div>
-                <div class="col-md-3">
-                    <label>To Date:</label>
-                    <input type="date" id="toDate" class="form-control" onchange="applyFilters()">
-                </div>
+        <div id="expenseListBlock"> 
+            <div class="card p-3 mt-3">
+                <h4>Totals</h4>
+                <p>Monthly Total: ₹<span id="monthlyTotal">0</span></p>
+                <p>Yearly Total: ₹<span id="yearlyTotal">0</span></p>
+                <p>Category Total: <span id="categoryTotal">0</span></p>
+                <p>Person Total (Current Month): <span id="personTotalsCurrentMonth">0</span></p>
+                <p>Person Total (Current Year): <span id="personTotalsCurrentYear">0</span></p>
+                <p>Person Total (Today): <span id="personTotalsToday">0</span></p>
+                <!-- <p id="alertMessage" class="warning"></p> -->
             </div>
-            <div class="table-responsive custom-scroll-table">
-                <table class="expensesTable table table-striped mb-0">
-                    <thead class="table-sticky-header">
-                        <tr>
-                            <th onclick="sortTable('Date')">Date 🔽</th>
-                            <th onclick="sortTable('Category')">Category</th>
-                            <th onclick="sortTable('Amount')">Amount</th>
-                            <!-- <th onclick="sortTable('Type')">Type</th> -->
-                            <th onclick="sortTable('Description')">Description</th>
-                            <th onclick="sortTable('Person')">Person</th>
-                            <th onclick="sortTable('AddedBy')">Added By</th>
-                        </tr>
-                    </thead>
-                    <tbody id="expenseTable"></tbody>
-                </table>
-            </div>
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <div id="recordCount" class="text-muted"></div>
-                <div class="d-flex align-items-center gap-2">
-                    <div class="btn-group mb-2" role="group">
-                        <input type="radio" class="btn-check" name="exportType" id="fullExport" value="fullExport"
-                            autocomplete="off">
-                        <label class="btn btn-outline-primary" for="fullExport">Full Export</label>
-                        <input type="radio" class="btn-check" name="exportType" id="filteredExport"
-                            value="filteredExport" autocomplete="off" checked>
-                        <label class="btn btn-outline-primary" for="filteredExport">Filtered Export</label>
+            <div class="card p-3 mt-3">
+                <h4>Expense List</h4>
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <label>Filter by Person:</label>
+                        <select id="filterPerson" class="form-control" onchange="applyExpensesFilters()">
+                            <option value="">All</option>
+                            <option value="Chaitu">Chaitu</option>
+                            <option value="Lassi">Lassi</option>
+                            <option value="Nissu">Nissu</option>
+                            <option value="Common">Common</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label>Filter by Category:</label>
+                        <select id="filterCategory" class="form-control" onchange="applyExpensesFilters()">
+                            <option value="">All</option>
+                            <option>Food</option>
+                            <option>Vegetbles</option>
+                            <option>Petrol</option>
+                            <option>Medicines</option>
+                            <option>Bills</option>
+                            <option>Travel</option>
+                            <option>Rent</option>
+                            <option>Entertainment</option>
+                            <option>Shopping</option>
+                            <option>Others</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label>From Date:</label>
+                        <input type="date" id="fromDate" class="form-control" onchange="applyExpensesFilters()">
+                    </div>
+                    <div class="col-md-3">
+                        <label>To Date:</label>
+                        <input type="date" id="toDate" class="form-control" onchange="applyExpensesFilterss()">
                     </div>
                 </div>
-                <div class="d-flex align-items-center gap-2">
-                    <button class="icon-btn" onclick="prevPage()" title="Previous Page">
-                        <i class="bi bi-arrow-left"></i>
-                    </button>
-                    <span id="pageInfo" class="mx-2 small text-muted"></span>
-                    <button class="icon-btn" onclick="nextPage()" title="Next Page">
-                        <i class="bi bi-arrow-right"></i>
-                    </button>
+                <div class="table-responsive custom-scroll-table">
+                    <table class="expensesTable table table-striped mb-0" id="expenseFullTable">
+                        <thead class="table-sticky-header">
+                            <tr>
+                                <th onclick="sortTable('Date',1)">Date </th>
+                                <th onclick="sortTable('Category',1)">Category</th>
+                                <th onclick="sortTable('Amount',1)">Amount</th>
+                                <!-- <th onclick="sortTable('Type')">Type</th> -->
+                                <th onclick="sortTable('Description',1)">Description</th>
+                                <th onclick="sortTable('Person',1)">Person</th>
+                                <th onclick="sortTable('AddedBy',1)">Added By</th>
+                            </tr>
+                        </thead>
+                        <tbody id="expenseTable"></tbody>
+                    </table>
                 </div>
-
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div id="recordCount" class="text-muted"></div>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="btn-group mb-2" role="group">
+                            <input type="radio" class="btn-check" name="ExpenseExport" id="fullExpenseExport" value="fullExpenseExport" autocomplete="off">
+                            <label class="btn btn-outline-primary" for="fullExpenseExport">Full Export</label>
+                            <input type="radio" class="btn-check" name="ExpenseExport" id="filteredExpenseExport"
+                                value="filteredExpenseExport" autocomplete="off" checked>
+                            <label class="btn btn-outline-primary" for="filteredExpenseExport">Filtered Export</label>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <button class="icon-btn" onclick="prevPage(1)" title="Previous Page">
+                            <i class="bi bi-arrow-left"></i>
+                        </button>
+                        <span id="pageInfo" class="mx-2 small text-muted"></span>
+                        <button class="icon-btn" onclick="nextPage(1)" title="Next Page">
+                            <i class="bi bi-arrow-right"></i>
+                        </button>
+                    </div>
+    
+                </div>
+    
             </div>
-
+        </div>
+          
+        <div id="policyListBlock" class="d-none">            
+            <div class="card p-3 mt-3">                
+                <h4>Policies List</h4>
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <label>Filter by Repeat:</label>                       
+                        <select class="form-control" id="policyFilterRepeat" name="repeat" onchange="applyPoliciesFilters()">
+                            <option value="">All</option>
+                            <option>Yearly</option>
+                            <option>Half-Yearly</option>
+                            <option>Quarterly</option>
+                            <option>Monthly</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label>Filter by Category:</label>                       
+                        <select class="form-select" id="policyFilterCategory" name="category" onchange="applyPoliciesFilters()">
+                            <option value="">All</option>
+                            <option>Insurance</option>
+                            <option>Health</option>
+                            <option>Investment</option>
+                            <option>Loan</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label>From Date:</label>
+                        <input type="date" id="policyFromDate" class="form-control" onchange="applyPoliciesFilters()">
+                    </div>
+                    <div class="col-md-3">
+                        <label>To Date:</label>
+                        <input type="date" id="policyToDate" class="form-control" onchange="applyPoliciesFilters()">
+                    </div>
+                </div>
+                <div class="table-responsive custom-scroll-table">
+                    <table class="expensesTable table table-striped mb-0" id="policyFullTable">
+                        <thead class="table-sticky-header">
+                            <tr>
+                                <th onclick="sortTable('DueDate',2)">Due Date</th>
+                                <th onclick="sortTable('PolicyNumber',2)">Policy Number</th>
+                                <th onclick="sortTable('Tenure',2)">Tenure</th>
+                                <th onclick="sortTable('Repeat',2)">Repeat</th>
+                                <th onclick="sortTable('Premium',2)">Premium</th>
+                                <th onclick="sortTable('Category',2)">Category</th>
+                                <th onclick="sortTable('Person',2)">Person</th>
+                                <th onclick="sortTable('Notes',2)">Notes</th>
+                                <th onclick="sortTable('Date',2)">Added By</th>
+                                <th onclick="sortTable('Date',2)">Added Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="policyTable"></tbody>
+                    </table>
+                </div>
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div id="recordCount" class="text-muted"></div>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="btn-group mb-2" role="group">
+                            <input type="radio" class="btn-check" name="policyExportType" id="fullPolicyExport" value="fullPolicyExport" autocomplete="off">
+                            <label class="btn btn-outline-primary" for="fullPolicyExport">Full Export</label>
+                            <input type="radio" class="btn-check" name="policyExportType" id="filteredPolicyExport"
+                                value="filteredPolicyExport" autocomplete="off" checked>
+                            <label class="btn btn-outline-primary" for="filteredPolicyExport">Filtered Export</label>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <button class="icon-btn" onclick="prevPage(2)" title="Previous Page">
+                            <i class="bi bi-arrow-left"></i>
+                        </button>
+                        <span id="pageInfo" class="mx-2 small text-muted"></span>
+                        <button class="icon-btn" onclick="nextPage(2)" title="Next Page">
+                            <i class="bi bi-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+          
+        <div id="fileListBlock" class="d-none">
+            <div class="card p-3 mt-3">                
+                <h4>Files List</h4>
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <label>Filter by File Type:</label>                       
+                        <select class="form-control" id="filterFileType" name="fileType" onchange="applyFilesFilters()">
+                            <option value="">All</option>
+                            <option>Medical File</option>
+                            <option>Policy</option>
+                            <option>House Tax</option>
+                            <option>Income Tax</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label>From Date:</label>
+                        <input type="date" id="filesFromDate" class="form-control" onchange="applyFilesFilters()">
+                    </div>
+                    <div class="col-md-3">
+                        <label>To Date:</label>
+                        <input type="date" id="filesToDate" class="form-control" onchange="applyFilesFilters()">
+                    </div>
+                </div>
+                <div class="table-responsive custom-scroll-table">
+                    <table class="filesTable table table-striped mb-0" id="filesFullTable">
+                        <thead class="table-sticky-header">
+                            <tr>
+                                <th onclick="sortTable('FileType',3)">File Type</th>
+                                <th onclick="sortTable('FileName',3)">File Name🔽</th>
+                                <th onclick="sortTable('Description',3)">Description</th>
+                                <th onclick="sortTable('GoogleDriveFileLink',2)">Google Drive File Link</th>
+                                <th onclick="sortTable('Person',3)">Person</th>
+                                <th onclick="sortTable('UploadDate',2)">Upload Date</th>
+                                <th onclick="sortTable('UploadedBy',2)">Uploaded By</th>
+                            </tr>
+                        </thead>
+                        <tbody id="filesTable"></tbody>
+                    </table>
+                </div>
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div id="recordCount" class="text-muted"></div>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="btn-group mb-2" role="group">
+                            <input type="radio" class="btn-check" name="filesExportType" id="fullFilesExport" value="fullFilesExport"
+                                autocomplete="off">
+                            <label class="btn btn-outline-primary" for="fullFilesExport">Full Export</label>
+                            <input type="radio" class="btn-check" name="filesExportType" id="filteredFilesExport"
+                                value="filteredFilesExport" autocomplete="off" checked>
+                            <label class="btn btn-outline-primary" for="filteredFilesExport">Filtered Export</label>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <button class="icon-btn" onclick="prevPage(3)" title="Previous Page">
+                            <i class="bi bi-arrow-left"></i>
+                        </button>
+                        <span id="pageInfo" class="mx-2 small text-muted"></span>
+                        <button class="icon-btn" onclick="nextPage(3)" title="Next Page">
+                            <i class="bi bi-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="mt-3">
@@ -596,18 +740,22 @@
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzelJCOF9n7_9aKECEUmT90xwgsKfy1jLuZJxSvYDFrPZH1SSa_-LNLc96mPbXCdl1Baw/exec";
         let allExpenses = [];
         let filteredExpenses = [];
+        let allPolicies = [];
+        let filteredPolicies = [];
+        let allFiles = [];
+        let filteredFiles = [];
         let currentPage = 1;
         const pageSize = 10;
         let currentSortColumn = '';
         let currentSortDirection = 'asc';
         let loggedInUserName = 'Please Login';
+        let module=1;
         var backgroundCodes = {
                     'Chaitu': '#33ceff',
                     'Lassi': '#e19ae5',
                     'Nissu': '#acf7f4'
                 };
 
-        
         window.onload = function () {
             if (!localStorage.getItem("loggedInUser")) {
                 alert("Login Successful!!")
@@ -622,88 +770,40 @@
             document.getElementById("date").value = today;
             document.getElementById("policyDueDate").value = today;
             getTotals();
-            getExpenses();
+            getExpenses();            
         };
-
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('.form-section').forEach(form => {
-                const button = form.querySelector('button[type="submit"], button');
-                if (button) {
-                    button.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        const activeForm = getActiveForm();
-
-                        if (activeForm === 'Expense') {
-                            submitExpenseForm();
-                        } else if (activeForm === 'Policy') {
-                            submitPolicyForm();
-                        } else if (activeForm === 'File') {
-                            submitFileForm();
-                        }
-                    });
-                }
-            });
-        });
 
         document.querySelectorAll('input[name="formType"]').forEach((radio) => {
             radio.addEventListener('change', function () {
                 const selected = this.value;
 
-                // Update title
+                // Update heading
                 document.getElementById('formHeading').textContent = `Add ${selected}`;
 
-                // Hide all and show selected
+                // Show/Hide Forms
                 document.querySelectorAll('.form-section').forEach(f => f.classList.add('d-none'));
-                document.getElementById(selected.toLowerCase() + 'Form').classList.remove('d-none');
+                document.getElementById(selected + 'Form').classList.remove('d-none');
+
+                // Show/Hide List Blocks
+                document.getElementById("expenseListBlock").classList.toggle("d-none", selected !== "expense");
+                document.getElementById("policyListBlock").classList.toggle("d-none", selected !== "policy");
+                document.getElementById("fileListBlock").classList.toggle("d-none", selected !== "file");
+
+                // Trigger respective events
+                if (selected === "expense") {
+                    module=1;
+                    getExpenses();     // Refresh expense list
+                    getTotals();       // Refresh totals
+                } else if (selected === "policy") {
+                    module=2;
+                    getPolicies();   // Load policy list
+                } else if (selected === "file") {
+                    module=3;
+                    getFiles();     // Load file list
+                }
             });
         });
-
-        // function logout() {
-        //     console.log(window.parent);
-        //     console.log(window.parent.location.href); 
-
-        //     localStorage.removeItem("loggedInUser");
-        //     if (window.parent && window.parent !== window) {
-        //         if (typeof window.parent.logout === "function") {
-        //             console.log("Calling parent logout...");
-        //             window.parent.logout();
-        //             return;
-        //         }
-        //     }
-            
-        //     console.log("Fallback to ?action=getLoginPage");
-        //     window.location.href = SCRIPT_URL+"?action=getLoginPage";
-        // }
-
-        // function logout() {
-        //     localStorage.removeItem("loggedInUser");
-
-        //     if (window.parent && typeof window.parent.logout === "function") {
-        //         console.log("🔁 Logging out via parent...");
-        //         window.parent.logout(); // Triggers parent GitHub logout()
-        //     } else {
-        //         console.log("🔁 Fallback to ?action=getLoginPage");
-        //         window.location.href = "?action=getLoginPage"; // Direct fallback
-        //     }
-        // }
-
-        // function logout() {
-        //     localStorage.removeItem("loggedInUser");
-        //     console.log("🔄 Attempting logout...");
-        //     if (window.parent && window.parent !== window) {
-        //         if (typeof window.parent.logout === "function") {
-        //             console.log("✅ Parent logout() exists. Calling...");
-        //             window.parent.logout();
-        //             return;
-        //         } else {
-        //             console.log("❌ Parent logout() not found.");
-        //         }
-        //     } else {
-        //         console.log("❌ window.parent is same as window or unavailable.");
-        //     }
-        //     console.log("🛑 Fallback to local redirect");
-        //     window.location.href = "?action=getLoginPage";
-        // }
+       
 
         function logout1() {
             localStorage.removeItem("loggedInUser");
@@ -716,11 +816,13 @@
                 window.location.href = SCRIPT_URL+"?action=getLoginPage";
             }
         }
+
         function logout2() {
             console.log("🔄 Logging out...");
             localStorage.removeItem("loggedInUser");
             window.location.href = "?action=getLoginPage";
         }
+        
         function logout() {
             localStorage.removeItem("loggedInUser");
             window.top.location.href = SCRIPT_URL + "?action=getLoginPage";
@@ -742,12 +844,6 @@
         });
 
         function redirectToLogin() {
-            // google.script.run.withSuccessHandler(function (html) {
-            //     document.open();
-            //     document.write(html);
-            //     document.close();
-            // }).loadLoginPage();
-
             google.script.run
               .withSuccessHandler(function (html) {
                 console.log("Received tracker HTML");
@@ -771,67 +867,7 @@
             return selected ? selected.textContent.trim() : '';
         }
 
-        function submitExpenseForm() {
-            addExpense();
-        }
-
-        function submitPolicyForm() {
-            const form = document.getElementById("policyForm");
-            const policyData = {
-                dueDate: form.querySelector('input[name="dueDate"]').value,
-                policyNumber: form.querySelector('input[name="policyNumber"]').value,
-                tenure: form.querySelector('input[name="tenure"]').value,
-                repeat: form.querySelector('select[name="repeat"]').value,
-                category: form.querySelector('select[name="category"]').value,
-                person: form.querySelector('input[name="person"]:checked').value,
-                notes: form.querySelector('input[name="notes"]').value,
-            };
-
-            google.script.run
-                .withSuccessHandler(() => alert("Policy saved successfully!"))
-                .withFailureHandler(err => alert("Error saving policy: " + err.message))
-                .savePolicy(policyData);
-        }
-
-        function submitFileForm() {
-            if (typeof google !== 'undefined' && google.script && google.script.run) {
-                const form = document.getElementById("fileForm");
-
-                const fileData = {
-                    fileName: form.querySelector('input[name="fileName"]').value,
-                    description: form.querySelector('input[name="description"]').value,
-                    fileType: form.querySelector('select[name="fileType"]').value,
-                    person: form.querySelector('input[name="filePerson"]:checked').value,
-                };
-
-                const fileInput = form.querySelector('input[name="uploadedFile"]');
-                const file = fileInput.files[0];
-
-                if (!file) {
-                    alert("Please choose a file to upload.");
-                    return;
-                }
-
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    const base64Data = e.target.result.split(",")[1];
-                    fileData.fileBase64 = base64Data;
-                    fileData.fileMimeType = file.type;
-                    fileData.fileOriginalName = file.name;
-
-                    google.script.run
-                        .withSuccessHandler(() => alert("File uploaded successfully!"))
-                        .withFailureHandler(err => alert("File upload failed: " + err.message))
-                        .saveFile(fileData);
-                };
-
-                reader.readAsDataURL(file);
-            } else {
-                console.warn("This script only runs inside a Google Apps Script Web App.");
-            }
-        }
-
-        function applyFilters() {
+        function applyExpensesFilters1() {
             const person = document.getElementById("filterPerson").value;
             const category = document.getElementById("filterCategory").value;
             const fromDate = document.getElementById("fromDate").value;
@@ -847,47 +883,202 @@
             });
 
             currentPage = 1;
-            renderTable();
+            
+            //renderTable(1);
+            sortTable("Date",1);
+            
         }
 
-        function renderTable() {
+        function applyExpensesFilters(shouldSort = true) {
+            const person = document.getElementById("filterPerson").value;
+            const category = document.getElementById("filterCategory").value;
+            const fromDate = document.getElementById("fromDate").value;
+            const toDate = document.getElementById("toDate").value;
+
+            filteredExpenses = allExpenses.filter(exp => {
+                const date = new Date(exp.Date);
+                const matchPerson = !person || exp.Person === person;
+                const matchCategory = !category || exp.Category === category;
+                const matchFromDate = !fromDate || new Date(fromDate) <= date;
+                const matchToDate = !toDate || new Date(toDate) >= date;
+                return matchPerson && matchCategory && matchFromDate && matchToDate;
+            });
+
+            currentPage = 1;
+            renderTable(1);
+
+            if (shouldSort) {
+                sortTable("Date", 1);
+            }
+        }
+
+        function applyPoliciesFilters() {
+            const repeat = document.getElementById("policyFilterRepeat").value;
+            const category = document.getElementById("policyFilterCategory").value;
+            const fromDate = document.getElementById("policyFromDate").value;
+            const toDate = document.getElementById("policyToDate").value;
+
+            filteredPolicies = allPolicies.filter(exp => {
+                const policyDate = new Date(exp.DueDate);
+                const policyDateOnly = policyDate.toISOString().split("T")[0];
+                const matchRepeat = !repeat || exp.Repeat === repeat;
+                const matchCategory = !category || exp.Category === category;
+                const matchFromDate = !fromDate || fromDate <= policyDateOnly;
+                const matchToDate = !toDate || toDate >= policyDateOnly;
+                return matchRepeat && matchCategory && matchFromDate && matchToDate;
+            });
+
+            currentPage = 1;
+            renderTable(2);
+        }
+
+        function applyFilesFilters() {
+            const fileType = document.getElementById("filterFileType").value;
+            const fromDate = document.getElementById("filesFromDate").value;
+            const toDate = document.getElementById("filesToDate").value;
+
+            filteredFiles = allFiles.filter(exp => {
+                const uploadDate = new Date(exp.UploadDate);
+                uploadDate.setHours(0, 0, 0, 0);  // normalize time
+
+                const matchFileType = !fileType || exp.FileType === fileType;
+
+                let matchFromDate = true;
+                let matchToDate = true;
+
+                if (fromDate) {
+                    const from = new Date(fromDate);
+                    from.setHours(0, 0, 0, 0);
+                    matchFromDate = from <= uploadDate;
+                }
+
+                if (toDate) {
+                    const to = new Date(toDate);
+                    to.setHours(0, 0, 0, 0);
+                    matchToDate = to >= uploadDate;
+                }
+
+                return matchFileType && matchFromDate && matchToDate;
+            });
+
+            currentPage = 1;
+            renderTable(3);
+        }
+
+        function renderExpenseTable() {
             const start = (currentPage - 1) * pageSize;
             const end = start + pageSize;
             const tableBody = document.getElementById("expenseTable");
             const currentData = filteredExpenses.slice(start, end);
 
             tableBody.innerHTML = currentData.map(exp => `
-      <tr>
-        <td>${exp.Date}</td>
-        <td>${exp.Category}</td>
-        <td>₹${exp.Amount}</td>
-        <td>${exp.Description}</td>
-        <td>${exp.Person || ""}</td>
-        <td>${exp.AddedBy || ""}</td>
-      </tr>
-    `).join("");
+                <tr>
+                    <td>${exp.Date}</td>
+                    <td>${exp.Category}</td>
+                    <td>₹${exp.Amount}</td>
+                    <td>${exp.Description}</td>
+                    <td>${exp.Person || ""}</td>
+                    <td>${exp.AddedBy || ""}</td>
+                </tr>
+            `).join("");
 
             const totalPages = Math.ceil(filteredExpenses.length / pageSize);
             document.getElementById("pageInfo").innerText = `Page ${currentPage} of ${totalPages}`;
             document.getElementById("recordCount").innerText = `Showing ${start + 1}-${Math.min(end, filteredExpenses.length)} of ${filteredExpenses.length} records`;
         }
 
-        function prevPage() {
+        function renderPolicyTable() {
+            const start = (currentPage - 1) * pageSize;
+            const end = start + pageSize;
+            const tableBody = document.getElementById("policyTable");
+            const currentData = filteredPolicies.slice(start, end);
+
+            tableBody.innerHTML = currentData.map(pol => `
+                <tr>
+                    <td>${formatDate(pol.DueDate)}</td>
+                    <td>${pol.PolicyNumber}</td>
+                    <td>${pol.Tenure}</td>
+                    <td>${pol.Repeat}</td>
+                    <td>${pol.Premium}</td>
+                    <td>${pol.Category}</td>
+                    <td>${pol.Person}</td>
+                    <td>${pol.Notes}</td>
+                    <td>${pol.AddedBy}</td>
+                    <td>${formatDate(pol.AddedDate)}</td>
+                </tr>
+            `).join("");
+
+            const totalPages = Math.ceil(filteredPolicies.length / pageSize);
+            document.getElementById("pageInfo").innerText = `Page ${currentPage} of ${totalPages}`;
+            document.getElementById("recordCount").innerText = `Showing ${start + 1}-${Math.min(end, filteredPolicies.length)} of ${filteredPolicies.length} records`;
+        }
+
+        function renderFilesTable() {
+            const start = (currentPage - 1) * pageSize;
+            const end = start + pageSize;
+            const tableBody = document.getElementById("filesTable");
+            const currentData = filteredFiles.slice(start, end);
+
+            tableBody.innerHTML = currentData.map(file => `
+                <tr>
+                    <td>${file.FileType}</td>
+                    <td>${file.FileName}</td>
+                    <td>${file.Description}</td>
+                    <td><a href='${file.GoogleDriveFileLink}' target="_blank" class="cursorPointer" >Open</a></td>
+                    <td>${file.Person}</td>
+                    <td>${formatDateTime(file.UploadDate)}</td>
+                    <td>${file.UploadedBy}</td>
+                </tr>
+            `).join("");
+
+            const totalPages = Math.ceil(filteredFiles.length / pageSize);
+            document.getElementById("pageInfo").innerText = `Page ${currentPage} of ${totalPages}`;
+            document.getElementById("recordCount").innerText = `Showing ${start + 1}-${Math.min(end, filteredFiles.length)} of ${filteredFiles.length} records`;
+        }
+
+        function formatDateTime(isoString) {
+            const d = new Date(isoString);
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            const hh = String(d.getHours()).padStart(2, '0');
+            const min = String(d.getMinutes()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd} ${hh}:${min}`;
+        }
+
+        function formatDate(isoString) {
+            const d = new Date(isoString);
+            const yyyy = d.getFullYear();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            return `${yyyy}-${mm}-${dd}`;
+        }
+        
+        function renderTable(tblType){
+            if(tblType==1)
+                renderExpenseTable();
+            else if(tblType==2)
+                renderPolicyTable();
+            else if(tblType==3)
+                renderFilesTable();
+        }
+        
+        function prevPage(tblType) {
             if (currentPage > 1) {
                 currentPage--;
-                renderTable();
+                renderTable(tblType);
             }
         }
 
-        function nextPage() {
+        function nextPage(tblType) {
             const totalPages = Math.ceil(filteredExpenses.length / pageSize);
             if (currentPage < totalPages) {
                 currentPage++;
-                renderTable();
+                renderTable(tblType);
             }
         }
 
-        function sortTable(column) {
+        function sortTable(column, tblType, shouldRender = true) {
             if (currentSortColumn === column) {
                 currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
             } else {
@@ -895,11 +1086,21 @@
                 currentSortDirection = 'asc';
             }
 
-            filteredExpenses.sort((a, b) => {
+            let data;
+
+            if (tblType === 1) {
+                data = filteredExpenses;
+            } else if (tblType === 2) {
+                data = filteredPolicies;
+            } else if (tblType === 3) {
+                data = filteredFiles;
+            }
+
+            data.sort((a, b) => {
                 let valA = a[column] || '';
                 let valB = b[column] || '';
 
-                if (column === 'Date') {
+                if (column === 'Date' || column === 'DueDate' || column === 'UploadDate') {
                     valA = new Date(valA);
                     valB = new Date(valB);
                 } else if (column === 'Amount') {
@@ -915,8 +1116,10 @@
                 return 0;
             });
 
-            renderTable();
-            updateSortIcons();
+            if (shouldRender) {
+                renderTable(tblType);
+                updateSortIcons();
+            }
         }
 
         function updateSortIcons() {
@@ -932,31 +1135,62 @@
         }
 
         function getExpenses() {
-            // google.script.run.withSuccessHandler(function (data) {
-            //     allExpenses = data.expenses || [];
-            //     filteredExpenses = [...allExpenses];
-            //     applyFilters();
-            // }).withFailureHandler(function (error) {
-            //     console.error("Google Script error:", error);
-            // }).getExpenses();
-
             fetch(SCRIPT_URL + "?action=getExpenses")
               .then(res => res.json())
               .then(data => {
                 allExpenses = data.expenses || [];
                 filteredExpenses = [...allExpenses];
-                applyFilters();
+                
+                filteredExpenses.sort((a, b) => new Date(b.Date) - new Date(a.Date));
+
+                currentSortColumn = "Date";
+                currentSortDirection = "desc";
+
+                currentPage = 1;
+                renderTable(1);           // Render the sorted table
+                updateSortIcons();     
+              })
+              .catch(err => console.error("❌ Error fetching data:", err));
+        }
+
+        function getPolicies() {
+            fetch(SCRIPT_URL + "?action=getPolicies")
+              .then(res => res.json())
+              .then(res => res.json())
+              .then(data => {
+                allPolicies = data.policies || [];
+                //filteredPolicies = [...allPolicies];
+                //applyPoliciesFilters();
+                allPolicies.sort((a, b) => {
+                    const [aMonth, aDay] = a["DueDate"].split("-").slice(1).map(Number);
+                    const [bMonth, bDay] = b["DueDate"].split("-").slice(1).map(Number);
+
+                    if (aMonth !== bMonth) return aMonth - bMonth;
+                    return aDay - bDay;
+                });
+
+                filteredPolicies = [...allPolicies];
+                currentSortColumn = "DueDate";
+                currentSortDirection = "asc";
+                currentPage = 1;
+                renderTable(2);
+                updateSortIcons();
+              })
+              .catch(err => console.error("❌ Error fetching data:", err));
+        }
+
+        function getFiles() {
+            fetch(SCRIPT_URL + "?action=getFiles")
+              .then(res => res.json())
+              .then(data => {
+                allFiles = data.files || [];
+                filteredFiles = [...filteredFiles];
+                applyFilesFilters();
               })
               .catch(err => console.error("❌ Error fetching data:", err));
         }
 
         function getTotals() {
-            // google.script.run.withSuccessHandler(function (data) {
-            //   loadTotals(data);
-            // }).withFailureHandler(function (error) {
-            //     console.error("Error fetching totals:", error);
-            // }).getTotals();
-
             fetch(SCRIPT_URL + "?action=getTotals")
               .then(res => res.json())
               .then(data => loadTotals(data))
@@ -1025,7 +1259,8 @@
             let type = 'Variable';
             let person = document.querySelector('input[name="person"]:checked')?.value;
             let notes = document.getElementById("notes").value;
-            let updatedBy = localStorage.getItem("loggedInUser");
+            let addedBy = localStorage.getItem("loggedInUser");
+            let addedDate = localStorage.getItem("loggedInUser");
 
             if (!date || !amount || !person || !type) {
                 alert("Please fill all required fields.");
@@ -1034,16 +1269,6 @@
 
             let expenseData = { date, category, amount, type, notes, person, updatedBy };
 
-            // google.script.run
-            //     .withSuccessHandler(function (response) {
-            //         alert("✅ Expense added!");
-            //         getTotals();
-            //         getExpenses();
-            //     })
-            //     .withFailureHandler(function (error) {
-            //         console.error("❌ Error:", error);
-            //     })
-            //     .addExpense(expenseData);
             fetch(SCRIPT_URL, {
                 method: "POST",
                 headers: {
@@ -1062,12 +1287,224 @@
               });
         }
 
-        function exportToExcel() {
-            if (document.getElementById('fullExport').checked) {
-                exportAllToExcel();
+        function addPolicy() {
+            
+            let policyCategory= document.getElementById("policyCategory").value;
+            let policyNumber= document.getElementById("policyNumber").value;
+            let premium= document.getElementById("policyPremium").value;
+            let dueDate= document.getElementById("policyDueDate").value;
+            let tenure= document.getElementById("policyTenure").value;
+            let repeat= document.getElementById("policyRepeat").value;
+            let notes= document.getElementById("policyNotes").value;
+            let person= document.querySelector('input[name="policyPerson"]:checked')?.value;
+            let addedBy = localStorage.getItem("loggedInUser");
+            
+            if (!policyCategory || !policyNumber || !premium || !dueDate) {
+                alert("Please fill all required fields.");
                 return;
             }
-            const table = document.getElementById("expenseTable");
+
+            let policyData = { dueDate, policyNumber, tenure, repeat, premium, policyCategory, person, notes, addedBy};
+
+            fetch(SCRIPT_URL, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "text/plain"
+                },
+                body: JSON.stringify({
+                  action: "addPolicy",
+                  data: policyData
+                })
+              })
+              .then(res => res.json())
+              .then(data => {
+                  alert("✅ Policy added!");
+                  getPolicies();
+              });
+        }
+
+        function addFile() {
+            let fileName = document.getElementById("fileName").value;
+            let description = document.getElementById("fileDescription").value;
+            let fileType = document.getElementById("fileType").value;
+            let person = document.querySelector('input[name="filePerson"]:checked')?.value;
+            let addedBy = localStorage.getItem("loggedInUser");
+
+            if (!fileName || !fileType || !person) {
+                alert("Please fill all required fields.");
+                return;
+            }
+
+            const fileInput = document.getElementById('fileUploaded');
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert("Please choose a file to upload.");
+                return;
+            }
+
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                const base64Data = e.target.result.split(",")[1];
+                let fileData = { 
+                    fileBase64: base64Data,
+                    fileMimeType: file.type,
+                    fileOriginalName: file.name
+                };
+
+                const fileDataObj = {
+                    fileName,
+                    description,
+                    fileType,
+                    person,
+                    addedBy,
+                    fileData
+                };
+
+                fetch(SCRIPT_URL, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "text/plain"
+                    },
+                    body: JSON.stringify({
+                        action: "addFile",  
+                        data: fileDataObj
+                    })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    alert("✅ File uploaded successfully!");
+                    getFiles(); 
+                })
+                .catch(err => {
+                    console.error("❌ Upload failed:", err);
+                    alert("Failed to upload file.", err);
+                });
+            };
+
+            reader.readAsDataURL(file);
+        }
+
+        function exportToExcel() {
+
+            if (module==1 && document.getElementById('fullExpenseExport').checked) {
+                exportAllExpensesToExcel();
+                return;
+            }
+            else if (module==2 && document.getElementById('fullPolicyExport').checked) {
+                exportAllPoliciesToExcel();
+                return;
+            }
+            else if (module==3 && document.getElementById('fullFilesExport').checked) {
+                exportAllFilesToExcel();
+                return;
+            }
+            else if (module==1 && document.getElementById('filteredExpenseExport').checked) {
+                exportFilteredExpensesToExcel();
+                return;
+            }
+            else if (module==2 && document.getElementById('filteredPolicyExport').checked) {
+                exportFilteredPoliciesToExcel();
+                return;
+            }
+            else if (module==3 && document.getElementById('filteredFilesExport').checked) {
+                exportFilteredFilesToExcel();
+                return;
+            }
+            
+        }
+
+        function exportAllExpensesToExcel() {
+            const expenses = allExpenses;
+
+            if (!expenses || expenses.length === 0) {
+                alert("No expenses to export.");
+                return;
+            }
+
+            // Prepare worksheet data with headers
+            const worksheetData = [
+                ["Date", "Category", "Amount", "Type", "Description", "Person", "AddedBy"],
+                ...expenses.map(exp => [
+                    exp.Date,
+                    exp.Category,
+                    exp.Amount,
+                    exp.Type,
+                    exp.Description,
+                    exp.Person || "",
+                    exp.AddedBy || ""
+                ])
+            ];
+
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+
+            XLSX.utils.book_append_sheet(wb, ws, "AllExpenses");
+            XLSX.writeFile(wb, "All_Expenses.xlsx");
+        }
+
+        function exportAllPoliciesToExcel() {
+            const policies = allPolicies;
+
+            if (!policies || policies.length === 0) {
+                alert("No expenses to export.");
+                return;
+            }
+
+            // Prepare worksheet data with headers
+            const worksheetData = [
+                ["Due Date", "Tenure", "Repeat", "Premium", "Category", "Person", "Notes", "Added Date"],
+                ...policies.map(pol => [
+                    formatDate(pol.DueDate),
+                    pol.Tenure,
+                    pol.Repeat,
+                    pol.Premium,
+                    pol.Category,
+                    pol.Person,
+                    pol.Notes,
+                    pol.Date
+                ])
+            ];
+
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+
+            XLSX.utils.book_append_sheet(wb, ws, "AllPolicies");
+            XLSX.writeFile(wb, "All_Policies.xlsx");
+        }
+
+        function exportAllFilesToExcel() {
+            const files = allFiles;
+
+            if (!files || files.length === 0) {
+                alert("No expenses to export.");
+                return;
+            }
+
+            // Prepare worksheet data with headers
+            const worksheetData = [
+                ["File Type", "File Name", "Description", "Link", "Person", "Upload Date", "Uploaded By"],
+                ...files.map(file => [
+                        file.FileType,
+                        file.FileName,
+                        file.Description,
+                        file.GoogleDriveFileLink,
+                        file.Person,
+                        formatDateTime(file.UploadDate),
+                        file.UploadedBy 
+                ])
+            ];
+
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+
+            XLSX.utils.book_append_sheet(wb, ws, "AllFiles");
+            XLSX.writeFile(wb, "All_Files.xlsx");
+        }
+
+        function exportFilteredExpensesToExcel(){
+            const table = document.getElementById("expenseFullTable");
             const wb = XLSX.utils.book_new();
             const ws = XLSX.utils.table_to_sheet(table);
 
@@ -1075,71 +1512,25 @@
             XLSX.writeFile(wb, "Expenses.xlsx");
         }
 
-        function exportAllToExcel() {
-            google.script.run
-                .withSuccessHandler(function (data) {
-                    const expenses = data.expenses;
+        function exportFilteredPoliciesToExcel(){
+            const table = document.getElementById("policyFullTable");
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.table_to_sheet(table);
 
-                    if (!expenses || expenses.length === 0) {
-                        alert("No expenses to export.");
-                        return;
-                    }
-
-                    // Prepare worksheet data with headers
-                    const worksheetData = [
-                        ["Date", "Category", "Amount", "Type", "Description", "Person", "AddedBy"],
-                        ...expenses.map(exp => [
-                            exp.Date,
-                            exp.Category,
-                            exp.Amount,
-                            exp.Type,
-                            exp.Description,
-                            exp.Person || "",
-                            exp.AddedBy || ""
-                        ])
-                    ];
-
-                    const wb = XLSX.utils.book_new();
-                    const ws = XLSX.utils.aoa_to_sheet(worksheetData);
-
-                    XLSX.utils.book_append_sheet(wb, ws, "AllExpenses");
-                    XLSX.writeFile(wb, "All_Expenses.xlsx");
-                })
-                .withFailureHandler(function (error) {
-                    console.error("Error exporting to Excel:", error);
-                    alert("Failed to export. Please try again.");
-                })
-                .getExpenses();
+            XLSX.utils.book_append_sheet(wb, ws, "Policies");
+            XLSX.writeFile(wb, "Policies.xlsx");
         }
 
-        function addPolicy() {
-            const data = {
-                policyName: document.getElementById("policyName").value,
-                policyNumber: document.getElementById("policyNumber").value,
-                amount: document.getElementById("policyAmount").value,
-                dueDate: document.getElementById("policyDueDate").value,
-                tenure: document.getElementById("policyTenure").value,
-                repeat: document.getElementById("policyRepeat").value,
-                notes: document.getElementById("policyNotes").value,
-            };
+        function exportFilteredFilesToExcel(){
+            const table = document.getElementById("filesFullTable");
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.table_to_sheet(table);
 
-            if (!data.policyName || !data.policyNumber || !data.amount || !data.dueDate) {
-                alert("Please fill all required fields.");
-                return;
-            }
-
-            google.script.run
-                .withSuccessHandler(function () {
-                    alert("✅ Policy added!");
-                    // Optionally refresh the policy list if needed
-                })
-                .withFailureHandler(function (err) {
-                    console.error("❌ Error adding policy:", err);
-                    alert("Failed to add policy. Please try again.");
-                })
-                .addPolicy(data); // Call the backend function and pass data
+            XLSX.utils.book_append_sheet(wb, ws, "Files");
+            XLSX.writeFile(wb, "Files.xlsx");
         }
 
+       
     </script>
     <style>
         body::before {
