@@ -107,8 +107,7 @@
     localStorage.removeItem("loggedInUser");
 
     // Reload iframe to login page
-    document.getElementById("app-frame").src =
-      "https://script.google.com/macros/s/AKfycbzelJCOF9n7_9aKECEUmT90xwgsKfy1jLuZJxSvYDFrPZH1SSa_-LNLc96mPbXCdl1Baw/exec";
+    document.getElementById("app-frame").src = SCRIPT_URL;
     }
   });
   function checkLogoutFlag() {
